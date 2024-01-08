@@ -1,10 +1,8 @@
 from flask import Flask, render_template
 import threading
-from TallyCode import start_keyboard_listener
+from TallyCode import start_keyboard_listener, key_counts
 
 app = Flask(__name__)
-
-from TallyCode import key_counts
 
 @app.route('/')
 def index():
