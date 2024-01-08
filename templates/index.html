@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Key Press Counter</title>
+</head>
+<body>
+    <h1>Key Press Counts</h1>
+    {% for key, count in key_counts.items() %}
+        <p>{{ key }}: {{ count }}</p>
+    {% endfor %}
+</body>
+</html>
