@@ -2,11 +2,49 @@
 <html>
 <head>
     <title>Key Press Counter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            width: 60%;
+            margin-left: auto;
+            margin-right: auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even){background-color: #f2f2f2;}
+        tr:hover {background-color: #ddd;}
+    </style>
 </head>
 <body>
     <h1>Key Press Counts</h1>
-    {% for key, count in key_counts.items() %}
-        <p>{{ key }}: {{ count }}</p>
-    {% endfor %}
+    <table>
+        <tr>
+            <th>Key Label</th>
+            <th>Count</th>
+        </tr>
+        {% for key, count in key_counts.items() %}
+            <tr>
+                <td>{{ key }}</td>
+                <td>{{ count }}</td>
+            </tr>
+        {% endfor %}
+    </table>
 </body>
 </html>
+

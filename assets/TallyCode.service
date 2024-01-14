@@ -1,0 +1,11 @@
+[Unit]
+Description=TallyCode.py
+
+[Service]
+ExecStart=/usr/bin/python3 /home/corey/TallyProject/app.py
+Restart=always
+User=root
+WorkingDirectory=/home/corey/TallyProject
+
+[Install]
+WantedBy=multi-user.target
