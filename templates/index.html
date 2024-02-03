@@ -37,6 +37,12 @@
         tr:hover {
             background-color: #ffb3e6; /* Slightly darker pink on hover */
         }
+        .content-image {
+        max-width: 60%; /* Adjust this value to fit your design */
+        height: auto; /* Maintain aspect ratio */
+        display: block; /* Display block to center with margin */
+        margin: 20px auto; /* Center the image and add some space around it */
+    }
     </style>
 </head>
 <body>
@@ -64,7 +70,7 @@
 </body>
 
     <h1>Harper and Sophie's Activity Tracker</h1>
-    <img src="{{ url_for('static', filename='assets/images/girlsbasket.jpg') }}" alt="photo of the girls in basket day 2 of life">
+    <img src="{{ url_for('static', filename='assets/images/girlsbasket.jpg') }}" alt="photo of the girls in basket day 2 of life" class="content-image">
 
     <h2>Last Event Times</h2>
     <table>
