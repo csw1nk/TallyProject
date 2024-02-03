@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Diaper Tracker</title>
+    <title>Activity Tracker</title>
     <style>
         body {
             font-family: 'Comic Sans MS', cursive, sans-serif;
@@ -9,11 +9,11 @@
             text-align: center;
             padding: 20px;
         }
-        h1 {
-            color: #ff66cc; /* Soft pink color for the heading */
+        h1, h2 {
+            color: #ff66cc; /* Soft pink color for the headings */
         }
         table {
-            width: 60%;
+            width: 80%;
             margin: 20px auto;
             border-collapse: collapse;
             border-radius: 15px; /* Rounded corners for the table */
@@ -40,19 +40,88 @@
     </style>
 </head>
 <body>
-    <h1>Diaper Tracker</h1>
+    <div id="currentDateTime" class="timestamp"></div>
+    <div class="timestamp">Last Updated On: {{ last_updated }}</div>
+
+    <script>
+        function updateDateTime() {
+            const now = new Date();
+            const options = {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true // or false depending on your preference
+            };
+            document.getElementById("currentDateTime").innerHTML = now.toLocaleString("en-US", options);
+        }
+        updateDateTime(); // Run once on load
+        setInterval(updateDateTime, 1000); // Update every second
+    </script>
+</body>
+
+    <h1>Harper and Sophie's Activity Tracker</h1>
+    <img src="{{ url_for('static', filename='assets/images/girlsbasket.jpg') }}" alt="photo of the girls in basket day 2 of life">
+
+    <h2>Last Event Times</h2>
     <table>
         <tr>
-            <th>Diaper Change Type</th>
-            <th>Count</th>
+            <th>Activity Type</th>
+            <th>Last Time</th>
         </tr>
-        {% for key, count in key_counts.items() %}
-            <tr>
-                <td>{{ key }}</td>
-                <td>{{ count }}</td>
-            </tr>
+        {% for key, time in last_event_times.items() %}
+        <tr>
+            <td>{{ key }}</td>
+            <td>{{ time }}</td>
+        </tr>
         {% endfor %}
     </table>
+
+    <h2>Total Counts</h2>
+    <table>
+        <tr>
+            <th>Activity Type</th>
+            <th>Total Count</th>
+        </tr>
+        {% for key, count in key_counts.items() %}
+        <tr>
+            <td>{{ key }}</td>
+            <td>{{ count }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Today's Counts</h2>
+    <table>
+        <tr>
+            <th>Activity Type</th>
+            <th>Today's Count</th>
+        </tr>
+        {% for key, count in today_counts.items() %}
+        <tr>
+            <td>{{ key }}</td>
+            <td>{{ count }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Average Counts Per Day</h2>
+    <table>
+        <tr>
+            <th>Activity Type</th>
+            <th>Average Count</th>
+        </tr>
+        {% for key, avg in average_counts_per_day.items() %}
+        <tr>
+            <td>{{ key }}</td>
+            <td>{{ avg }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
 </body>
 </html>
 
