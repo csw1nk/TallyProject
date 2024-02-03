@@ -3,6 +3,9 @@ import sqlite3
 from TallyCode import key_counts
 from datetime import datetime
 
+timestamp_str = "2024-02-03 22:40:56"
+timestamp_dt = datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S")
+
 app = Flask(__name__)
 
 def get_key_counts():
@@ -55,14 +58,28 @@ def get_average_counts_per_day():
     conn.close()
     return averages
 
+def format_datetime(datetime_obj):
+    # Handle the suffix for the day
+    day = datetime_obj.day
+    if 4 <= day <= 20 or 24 <= day <= 30:
+        suffix = "th"
+    else:
+        suffix = ["st", "nd", "rd"][day % 10 - 1]
+    
+    formatted_datetime = datetime_obj.strftime(f"%B {day}{suffix}, %Y at %I:%M%p")
+    return formatted_datetime
+
 @app.route('/')
 def index():
     key_counts = get_key_counts()
     last_event_times = get_last_event_times()
+    formatted_last_times = {key: format_datetime(datetime.strptime(value, "%Y-%m-%d %H:%M:%S")) for key, value in last_event_times.items()}
     today_counts = get_today_counts()
     average_counts_per_day = get_average_counts_per_day()
-    return render_template('index.html', key_counts=key_counts, last_event_times=last_event_times, 
-                           today_counts=today_counts, average_counts_per_day=average_counts_per_day)
+    last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Current time formatted as a string
+    return render_template('index.html', key_counts=key_counts, last_event_times=formatted_last_times, 
+                           today_counts=today_counts, average_counts_per_day=average_counts_per_day,
+                           last_updated=last_updated)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
