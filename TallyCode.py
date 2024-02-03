@@ -4,13 +4,12 @@ import keyboard
 
 # Mapping of key codes to descriptive labels
 key_label_mapping = {
-    "6": "Placeholder 2",
+    "6": "Feeding for Sophie",
     "1": "Pee Diaper for Harper",
-    "5": "Poo Diaper for Halston",
-    "2": "Pee Diaper for Halston",
-    "4": "Poo Diaper for Harper",
-    "3": "Placeholder 1",
-    # Add other mappings as needed
+    "5": "Poo Diaper for Sophie",
+    "2": "Poo Diaper for Harper",
+    "4": "Pee Diaper for Sophie",
+    "3": "Feeding for Harper",
 }
 
 key_counts = {label: 0 for label in key_label_mapping.values()}

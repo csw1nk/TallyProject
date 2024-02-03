@@ -1,41 +1,49 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Key Press Counter</title>
+    <title>Diaper Tracker</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #ffccf9; /* Light pink background */
             text-align: center;
             padding: 20px;
         }
         h1 {
-            color: #333;
+            color: #ff66cc; /* Soft pink color for the heading */
         }
         table {
             width: 60%;
-            margin-left: auto;
-            margin-right: auto;
+            margin: 20px auto;
             border-collapse: collapse;
+            border-radius: 15px; /* Rounded corners for the table */
+            overflow: hidden; /* Ensures the rounded corners affect child elements */
+            box-shadow: 0px 0px 10px #888888; /* Soft shadow for depth */
         }
         th, td {
-            border: 1px solid #ddd;
+            border: 1px solid #ff99cc; /* Light pink border for table cells */
             padding: 8px;
             text-align: left;
+            border-radius: 10px; /* Rounded corners for table cells */
         }
         th {
-            background-color: #4CAF50;
+            background-color: #ff66cc; /* Deeper pink for the header */
             color: white;
+            font-size: 1.2em;
         }
-        tr:nth-child(even){background-color: #f2f2f2;}
-        tr:hover {background-color: #ddd;}
+        tr:nth-child(even) {
+            background-color: #ffccf9; /* Light pink for even rows */
+        }
+        tr:hover {
+            background-color: #ffb3e6; /* Slightly darker pink on hover */
+        }
     </style>
 </head>
 <body>
-    <h1>Key Press Counts</h1>
+    <h1>Diaper Tracker</h1>
     <table>
         <tr>
-            <th>Key Label</th>
+            <th>Diaper Change Type</th>
             <th>Count</th>
         </tr>
         {% for key, count in key_counts.items() %}
