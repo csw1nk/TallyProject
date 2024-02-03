@@ -69,12 +69,23 @@ def format_datetime(datetime_obj):
     formatted_datetime = datetime_obj.strftime(f"%B {day}{suffix}, %Y at %I:%M%p")
     return formatted_datetime
 
+def utc_to_local(utc_dt, local_tz):
+    # Convert the UTC datetime to a timezone-aware datetime
+    utc_dt = utc_dt.replace(tzinfo=pytz.utc)
+    # Convert to local time zone
+    local_dt = utc_dt.astimezone(pytz.timezone(local_tz))
+    return local_dt
+
 @app.route('/')
 def index():
     key_counts = get_key_counts()
     last_event_times = get_last_event_times()
-    formatted_last_times = {key: format_datetime(datetime.strptime(value, "%Y-%m-%d %H:%M:%S")) for key, value in last_event_times.items()}
-    today_counts = get_today_counts()
+    local_tz = 'America/New_York'
+    formatted_last_times = {}
+    for key, utc_str in last_event_times.items():
+        utc_dt = datetime.strptime(utc_str, "%Y-%m-%d %H:%M:%S")
+        local_dt = utc_to_local(utc_dt, local_tz)
+        formatted_last_times[key] = format_datetime(local_dt)    today_counts = get_today_counts()
     average_counts_per_day = get_average_counts_per_day()
     last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Current time formatted as a string
     return render_template('index.html', key_counts=key_counts, last_event_times=formatted_last_times, 
