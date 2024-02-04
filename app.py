@@ -80,11 +80,12 @@ def index():
     last_event_times = {key: format_datetime(value, 'America/New_York') for key, value in get_last_event_times().items()}
     today_counts = get_today_counts()
     average_counts_per_day = get_average_counts_per_day()
-    last_updated = datetime.now(pytz.timezone('America/New_York')).strftime('%Y-%m-%d %H:%M:%S')  # Current time in 'America/New_York'
+    last_updated = datetime.now(pytz.timezone('America/New_York'))
+    formatted_last_updated = format_datetime(last_updated.strftime('%Y-%m-%d %H:%M:%S'), 'America/New_York')
     
     return render_template('index.html', key_counts=key_counts, last_event_times=last_event_times,
                            today_counts=today_counts, average_counts_per_day=average_counts_per_day,
-                           last_updated=last_updated)
+                           last_updated=formatted_last_updated)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
