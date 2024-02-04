@@ -34,6 +34,19 @@ def get_last_event_times():
     conn.close()
     return last_times
 
+def get_last_update_time():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    # Assuming there's a table `updates_log` with a column `last_updated`
+    cur.execute("SELECT last_updated FROM updates_log ORDER BY last_updated DESC LIMIT 1")
+    last_update = cur.fetchone()
+    conn.close()
+    if last_update:
+        return last_update['last_updated']
+    else:
+        # If no updates have been logged, return the current time or a default value
+        return datetime.now(pytz.timezone('America/New_York')).strftime('%Y-%m-%d %H:%M:%S')
+
 def get_today_counts():
     today = datetime.now().strftime('%Y-%m-%d')
     conn = get_db_connection()
@@ -80,8 +93,9 @@ def index():
     last_event_times = {key: format_datetime(value, 'America/New_York') for key, value in get_last_event_times().items()}
     today_counts = get_today_counts()
     average_counts_per_day = get_average_counts_per_day()
-    last_updated = datetime.now(pytz.timezone('America/New_York'))
-    formatted_last_updated = format_datetime(last_updated.strftime('%Y-%m-%d %H:%M:%S'), 'America/New_York')
+    # Retrieve and format the last update time from the database
+    last_update_str = get_last_update_time()
+    formatted_last_updated = format_datetime(last_update_str, 'America/New_York')
     
     return render_template('index.html', key_counts=key_counts, last_event_times=last_event_times,
                            today_counts=today_counts, average_counts_per_day=average_counts_per_day,
