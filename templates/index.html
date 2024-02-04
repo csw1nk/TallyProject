@@ -69,7 +69,7 @@
     </script>
 </body>
 
-    <h1>Harper and Sophie's Activity Tracker</h1>
+    <h1>Harper and Sophie's Life Tracker</h1>
     <img src="{{ url_for('static', filename='assets/images/girlsbasket.jpg') }}" alt="photo of the girls in basket day 2 of life" class="content-image">
 
     <h2>Last Event Times</h2>
@@ -86,20 +86,6 @@
         {% endfor %}
     </table>
 
-    <h2>Total Counts</h2>
-    <table>
-        <tr>
-            <th>Activity Type</th>
-            <th>Total Count</th>
-        </tr>
-        {% for key, count in key_counts.items() %}
-        <tr>
-            <td>{{ key }}</td>
-            <td>{{ count }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-
     <h2>Today's Counts</h2>
     <table>
         <tr>
@@ -107,6 +93,20 @@
             <th>Today's Count</th>
         </tr>
         {% for key, count in today_counts.items() %}
+        <tr>
+            <td>{{ key }}</td>
+            <td>{{ count }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Total Counts</h2>
+    <table>
+        <tr>
+            <th>Activity Type</th>
+            <th>Total Count</th>
+        </tr>
+        {% for key, count in key_counts.items() %}
         <tr>
             <td>{{ key }}</td>
             <td>{{ count }}</td>
