@@ -24,6 +24,12 @@ def get_key_counts():
     """Get counts of each key press from the database."""
     return {row['key_label']: row['count'] for row in query_db("SELECT key_label, COUNT(*) as count FROM keypresses GROUP BY key_label")}
 
+def get_most_recent_keypress():
+    """Get the most recent key press timestamp."""
+    query = "SELECT MAX(timestamp) FROM keypresses"
+    result = query_db(query, one=True)
+    return result['MAX(timestamp)'] if result and result['MAX(timestamp)'] else None
+
 def get_last_event_times():
     """Get the last event time for each key press."""
     return {row['key_label']: row['MAX(timestamp)'] for row in query_db("SELECT key_label, MAX(timestamp) FROM keypresses GROUP BY key_label")}
@@ -46,12 +52,14 @@ def format_datetime(datetime_str, local_tz=TIMEZONE):
 
 @app.route('/')
 def index():
+    most_recent_keypress = get_most_recent_keypress()
+    simplified_last_update = format_datetime(most_recent_keypress) if most_recent_keypress else "No recent updates"
     return render_template('index.html', 
                            key_counts=get_key_counts(), 
                            last_event_times={key: format_datetime(value) for key, value in get_last_event_times().items()},
                            today_counts=get_today_counts(), 
                            average_counts_per_day=get_average_counts_per_day(),
-                           last_updated=datetime.now(pytz.timezone(TIMEZONE)).strftime('%Y-%m-%d %H:%M:%S'))
+                           last_updated=simplified_last_update)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
