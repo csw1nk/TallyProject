@@ -1,19 +1,22 @@
 from flask import Flask, render_template
 import sqlite3
 from datetime import datetime
-from contextlib import closing
 import pytz
 
 app = Flask(__name__)
 DATABASE = 'tally.db'
 TIMEZONE = 'America/New_York'
 
+def get_db_connection():
+    """Create a database connection with context management."""
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
 def query_db(query, args=(), one=False):
-    """Simplify database queries using context managers."""
-    with closing(sqlite3.connect(DATABASE)) as conn:
-        conn.row_factory = sqlite3.Row
-        cur = conn.cursor()
-        cur.execute(query, args)
+    """Query database and return results."""
+    with get_db_connection() as conn:
+        cur = conn.execute(query, args)
         rv = cur.fetchall()
         return (rv[0] if rv else None) if one else rv
 
@@ -24,31 +27,6 @@ def get_key_counts():
 def get_last_event_times():
     """Get the last event time for each key press."""
     return {row['key_label']: row['MAX(timestamp)'] for row in query_db("SELECT key_label, MAX(timestamp) FROM keypresses GROUP BY key_label")}
-
-def get_last_updated_timestamp():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT MAX(timestamp) FROM keypresses")
-    last_updated = cur.fetchone()[0]  # Assuming the first column contains the timestamp
-    conn.close()
-    if last_updated is not None:
-        # Convert the timestamp to a more readable format, if needed
-        return format_datetime(last_updated, 'America/New_York')
-    else:
-        return "No data available"
-
-def get_last_update_time():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    # Assuming there's a table `updates_log` with a column `last_updated`
-    cur.execute("SELECT last_updated FROM updates_log ORDER BY last_updated DESC LIMIT 1")
-    last_update = cur.fetchone()
-    conn.close()
-    if last_update:
-        return last_update['last_updated']
-    else:
-        # If no updates have been logged, return the current time or a default value
-        return datetime.now(pytz.timezone('America/New_York')).strftime('%Y-%m-%d %H:%M:%S')
 
 def get_today_counts():
     """Get count of today's key presses."""
@@ -77,4 +55,3 @@ def index():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
-
