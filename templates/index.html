@@ -1,24 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Activity Tracker</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensure proper mobile scaling -->
+    <title>Harp & Soph Life Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"> <!-- Use Google Fonts for consistency -->
     <style>
         body {
-            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-family: 'Roboto', sans-serif; /* More readable font */
             background-color: #ffccf9; /* Light pink background */
             text-align: center;
             padding: 20px;
+            margin: 0;
         }
         h1, h2 {
             color: #ff66cc; /* Soft pink color for the headings */
         }
         table {
-            width: 80%;
+            width: 100%; /* Full width on mobile */
+            max-width: 80%; /* Max width on desktop */
             margin: 20px auto;
             border-collapse: collapse;
             border-radius: 15px; /* Rounded corners for the table */
             overflow: hidden; /* Ensures the rounded corners affect child elements */
-            box-shadow: 0px 0px 10px #888888; /* Soft shadow for depth */
+            box-shadow: 0 0 10px #888888; /* Soft shadow for depth */
         }
         th, td {
             border: 1px solid #ff99cc; /* Light pink border for table cells */
@@ -38,11 +43,11 @@
             background-color: #ffb3e6; /* Slightly darker pink on hover */
         }
         .content-image {
-        max-width: 60%; /* Adjust this value to fit your design */
-        height: auto; /* Maintain aspect ratio */
-        display: block; /* Display block to center with margin */
-        margin: 20px auto; /* Center the image and add some space around it */
-    }
+            max-width: 90%; /* Adjust for mobile */
+            height: auto;
+            display: block;
+            margin: 20px auto;
+        }
     </style>
 </head>
 <body>
@@ -53,21 +58,14 @@
         function updateDateTime() {
             const now = new Date();
             const options = {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: true // or false depending on your preference
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
             };
             document.getElementById("currentDateTime").innerHTML = now.toLocaleString("en-US", options);
         }
         updateDateTime(); // Run once on load
         setInterval(updateDateTime, 1000); // Update every second
     </script>
-</body>
 
     <h1>Harper and Sophie's Life Tracker</h1>
     <img src="{{ url_for('static', filename='assets/images/girlsbasket.jpg') }}" alt="photo of the girls in basket day 2 of life" class="content-image">
