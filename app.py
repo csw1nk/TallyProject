@@ -78,14 +78,19 @@ def get_image_files():
 def get_events_last_3_days():
     conn = get_db_connection()
     cur = conn.cursor()
-    three_days_ago = datetime.now(pytz.timezone(TIMEZONE)) - timedelta(days=3)
+    three_days_ago = datetime.now() - timedelta(days=3)
     cur.execute("""
         SELECT key_label, timestamp
         FROM keypresses
         WHERE DATE(timestamp) >= ?
         ORDER BY timestamp DESC
     """, (three_days_ago.strftime('%Y-%m-%d'),))
-    events = [{'key_label': row['key_label'], 'timestamp': format_datetime(row['timestamp'])} for row in cur.fetchall()]
+    events = []
+    for row in cur.fetchall():
+        # Assuming row['timestamp'] is a string in '%Y-%m-%d %H:%M:%S' format
+        timestamp = datetime.strptime(row['timestamp'], '%Y-%m-%d %H:%M:%S')
+        formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        events.append({'key_label': row['key_label'], 'timestamp': formatted_timestamp})
     conn.close()
     return events
 

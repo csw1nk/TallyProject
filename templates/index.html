@@ -189,12 +189,12 @@
             <th>Time</th>
         </tr>
         {% for event in events_last_3_days %}
-        <tr>
-            <td>{{ event.timestamp.strftime('%Y-%m-%d') }}</td>
-            <td>{{ event.key_label }}</td>
-            <td>{{ event.timestamp.strftime('%H:%M:%S') }}</td>
-        </tr>
-        {% endfor %}
+<tr>
+    <td>{{ event.timestamp.split(' ')[0] }}</td> <!-- Date part -->
+    <td>{{ event.key_label }}</td>
+    <td>{{ event.timestamp.split(' ')[1] }}</td> <!-- Time part -->
+</tr>
+{% endfor %}
     </table>
 
     <h2>Today's Counts</h2>
