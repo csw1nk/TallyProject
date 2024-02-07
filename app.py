@@ -2,10 +2,12 @@ from flask import Flask, render_template
 import sqlite3
 from datetime import datetime
 import pytz
+import os
 
 app = Flask(__name__)
 DATABASE = 'tally.db'
 TIMEZONE = 'America/New_York'
+IMAGE_DIR = os.path.join('static', 'assets', 'images')  # Adjust based on your structure
 
 def get_db_connection():
     """Create a database connection with context management."""
@@ -64,18 +66,29 @@ def format_datetime(datetime_str, local_tz=TIMEZONE):
     suffix = ["th", "st", "nd", "rd"][(local_dt.day % 10) - 1 if local_dt.day % 10 < 4 and not 11 <= local_dt.day <= 13 else 0]
     return local_dt.strftime(f"%B {local_dt.day}{suffix}, %Y at %I:%M%p")
 
+def get_image_files():
+    """List all image files in the specified directory."""
+    image_files = []
+    for filename in os.listdir(IMAGE_DIR):
+        if filename.endswith(('.png', '.jpg', '.jpeg', '.gif')):
+            # Note: Adjust the path based on how you want to reference it in the template
+            image_files.append(os.path.join('assets/images', filename))
+    return image_files
+
 @app.route('/')
 def index():
     most_recent_keypress = get_most_recent_keypress()
     simplified_last_update = format_datetime(most_recent_keypress) if most_recent_keypress else "No recent updates"
     last_event_times = get_last_event_times()  # This now contains both 'Feeding' and 'Diapers' categories
+    image_files = get_image_files()  # Get list of image files
 
     return render_template('index.html', 
                            key_counts=get_key_counts(), 
                            last_event_times=last_event_times,  # Pass the structured dict as is
                            today_counts=get_today_counts(), 
                            average_counts_per_day=get_average_counts_per_day(),
-                           last_updated=simplified_last_update)
+                           last_updated=simplified_last_update,
+                           image_files=image_files)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
