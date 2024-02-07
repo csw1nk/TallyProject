@@ -36,7 +36,7 @@ def get_last_event_times():
     """Get the last event time for each key press, split by category."""
     categories = {
         'Feeding': ['Feeding Sophie', 'Feeding Harper'],
-        'Diapers': ['Pee Harper', 'Poo Sophie', 'Poo Harper', 'Pee Sophie']
+        'Diapers': ['Pee Harper','Poo Harper', 'Pee Sophie', 'Poo Sophie']
     }
     last_events = {'Feeding': {}, 'Diapers': {}}
 
