@@ -55,33 +55,59 @@
             }
         }
         /* Gallery overlay styling */
-        #galleryOverlay {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1001; /* Sit on top */
-            left: 0;
-            top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
-        }
-        /* Close button */
-        .closeBtn {
-            position: absolute;
-            top: 15px;
-            right: 35px;
-            color: #fff;
-            font-size: 40px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        /* Gallery images */
-        .galleryImg {
-            margin: 10px;
-            max-width: 90%;
-            transition: transform 0.2s; /* Animation */
-        }
+#galleryOverlay {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1001; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+    padding-top: 50px; /* Adds some space at the top */
+}
+
+/* Close button */
+.closeBtn {
+    position: fixed;
+    top: 15px;
+    right: 35px;
+    color: #fff;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Gallery container */
+.gallery-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 0 4px;
+}
+
+/* Gallery images */
+.galleryImg {
+    margin: 10px;
+    max-width: 90%;
+    width: auto; /* Adjust width to maintain aspect ratio */
+    max-height: 400px; /* Limiting the height for larger displays */
+    transition: transform 0.2s; /* Animation */
+    cursor: pointer; /* Indicates the image can be clicked */
+}
+
+@media (min-width: 768px) { /* For desktop screens */
+    .galleryImg {
+        max-width: 45%; /* Adjust to display more images in a row on desktop */
+    }
+}
+
+@media (min-width: 1024px) { /* Larger desktop screens */
+    .galleryImg {
+        max-width: 30%; /* Further adjust for larger screens */
+    }
+}
         .galleryImg:hover {
             transform: scale(1.1); /* Slight zoom on hover */
         }
