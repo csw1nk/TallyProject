@@ -31,8 +31,22 @@ def get_most_recent_keypress():
     return result['MAX(timestamp)'] if result and result['MAX(timestamp)'] else None
 
 def get_last_event_times():
-    """Get the last event time for each key press."""
-    return {row['key_label']: row['MAX(timestamp)'] for row in query_db("SELECT key_label, MAX(timestamp) FROM keypresses GROUP BY key_label")}
+    """Get the last event time for each key press, split by category."""
+    categories = {
+        'Feeding': ['Feeding Sophie', 'Feeding Harper'],
+        'Diapers': ['Pee Harper', 'Poo Sophie', 'Poo Harper', 'Pee Sophie']
+    }
+    last_events = {'Feeding': {}, 'Diapers': {}}
+
+    with get_db_connection() as conn:
+        for category, labels in categories.items():
+            for label in labels:
+                cur = conn.execute("SELECT key_label, MAX(timestamp) FROM keypresses WHERE key_label = ? GROUP BY key_label", (label,))
+                row = cur.fetchone()
+                if row:
+                    last_events[category][row['key_label']] = format_datetime(row['MAX(timestamp)'])
+    
+    return last_events
 
 def get_today_counts():
     """Get count of today's key presses."""
@@ -54,9 +68,11 @@ def format_datetime(datetime_str, local_tz=TIMEZONE):
 def index():
     most_recent_keypress = get_most_recent_keypress()
     simplified_last_update = format_datetime(most_recent_keypress) if most_recent_keypress else "No recent updates"
+    last_event_times = get_last_event_times()  # This now contains both 'Feeding' and 'Diapers' categories
+
     return render_template('index.html', 
                            key_counts=get_key_counts(), 
-                           last_event_times={key: format_datetime(value) for key, value in get_last_event_times().items()},
+                           last_event_times=last_event_times,  # Pass the structured dict as is
                            today_counts=get_today_counts(), 
                            average_counts_per_day=get_average_counts_per_day(),
                            last_updated=simplified_last_update)
