@@ -1,8 +1,9 @@
 from flask import Flask, render_template
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 import os
+from pytz import timezone
 
 app = Flask(__name__)
 DATABASE = 'tally.db'
@@ -36,7 +37,7 @@ def get_last_event_times():
     """Get the last event time for each key press, split by category."""
     categories = {
         'Feeding': ['Feeding Sophie', 'Feeding Harper'],
-        'Diapers': ['Pee Harper', 'Poo Sophie', 'Poo Harper', 'Pee Sophie']
+        'Diapers': ['Pee Harper','Poo Harper', 'Pee Sophie', 'Poo Sophie']
     }
     last_events = {'Feeding': {}, 'Diapers': {}}
 
@@ -59,12 +60,17 @@ def get_average_counts_per_day():
     """Calculate the average count per day for each key press."""
     return {row['key_label']: row['total_count'] / row['days'] for row in query_db("SELECT key_label, COUNT(*) as total_count, COUNT(DISTINCT DATE(timestamp)) as days FROM keypresses GROUP BY key_label") if row['days'] > 0}
 
-def format_datetime(datetime_str, local_tz=TIMEZONE):
+def format_datetime(datetime_str, local_tz='America/New_York'):
     """Format datetime string to a more readable form, converting UTC to local timezone."""
-    utc_dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo=pytz.utc)
-    local_dt = utc_dt.astimezone(pytz.timezone(local_tz))
+    utc_tz = pytz.utc
+    local_timezone = timezone(local_tz)
+    utc_dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+    utc_dt = utc_tz.localize(utc_dt)  # Localize as UTC
+    local_dt = utc_dt.astimezone(local_timezone)  # Convert to local timezone
+    # Format with the appropriate suffix for the day
     suffix = ["th", "st", "nd", "rd"][(local_dt.day % 10) - 1 if local_dt.day % 10 < 4 and not 11 <= local_dt.day <= 13 else 0]
-    return local_dt.strftime(f"%B {local_dt.day}{suffix}, %Y at %I:%M%p")
+    formatted_datetime = local_dt.strftime(f"%B {local_dt.day}{suffix}, %Y at %I:%M%p")
+    return formatted_datetime
 
 def get_image_files():
     """List all image files in the specified directory."""
@@ -75,12 +81,42 @@ def get_image_files():
             image_files.append(os.path.join('assets/images', filename))
     return image_files
 
+def get_events_last_3_days():
+    conn = get_db_connection()
+    events = {'Feeding': [], 'Diapers': []}
+    three_days_ago = datetime.now(pytz.timezone(TIMEZONE)) - timedelta(days=3)
+    # Assuming these are the correct labels for categorization
+    labels = {
+        'Feeding': ['Feeding Harper', 'Feeding Sophie'],
+        'Diapers': ['Pee Harper','Poo Harper', 'Pee Sophie', 'Poo Sophie']
+    }
+    for category, label_list in labels.items():
+        for label in label_list:
+            cur = conn.execute("""
+                SELECT key_label, timestamp
+                FROM keypresses
+                WHERE DATE(timestamp) >= ? AND key_label = ?
+                ORDER BY timestamp DESC
+            """, (three_days_ago.strftime('%Y-%m-%d'), label))
+            fetched_events = cur.fetchall()
+            print(f"Events fetched for {label}: {fetched_events}")  # Debugging line
+            for row in fetched_events:
+                events[category].append({
+                    'key_label': row['key_label'],
+                    'timestamp': format_datetime(row['timestamp'], TIMEZONE)
+                })
+    conn.close()
+    print(f"Events categorized: {events}")  # Debugging line
+    return events
+
 @app.route('/')
 def index():
     most_recent_keypress = get_most_recent_keypress()
     simplified_last_update = format_datetime(most_recent_keypress) if most_recent_keypress else "No recent updates"
     last_event_times = get_last_event_times()  # This now contains both 'Feeding' and 'Diapers' categories
     image_files = get_image_files()  # Get list of image files
+    events_last_3_days = get_events_last_3_days()  # Fetch events for the last 3 days
+
 
     return render_template('index.html', 
                            key_counts=get_key_counts(), 
@@ -88,7 +124,8 @@ def index():
                            today_counts=get_today_counts(), 
                            average_counts_per_day=get_average_counts_per_day(),
                            last_updated=simplified_last_update,
-                           image_files=image_files)
+                           image_files=image_files,
+                           events_last_3_days=events_last_3_days)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
