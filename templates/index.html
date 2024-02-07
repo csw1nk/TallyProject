@@ -182,19 +182,43 @@
     </div>
     
     <h2>Events in the Last 3 Days</h2>
-    <table>
-        <tr>
-            <th>Date</th>
-            <th>Event</th>
-            <th>Time</th>
-        </tr>
-        {% for event in events_last_3_days %}
-<tr>
-    <td>{{ event.timestamp }}</td> <!-- Directly display the formatted timestamp -->
-    <td>{{ event.key_label }}</td>
-</tr>
-{% endfor %}
-    </table>
+    <div style="display: flex; justify-content: space-around;">
+        <div>
+            <h3>Feedings</h3>
+            <table>
+                <tr>
+                    <th>Date</th>
+                    <th>Event</th>
+                    <th>Time</th>
+                </tr>
+                {% for event in events_last_3_days['Feeding'] %}
+                <tr>
+                    <td>{{ event.timestamp.split(' at ')[0] }}</td>
+                    <td>{{ event.key_label }}</td>
+                    <td>{{ event.timestamp.split(' at ')[1] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div>
+            <h3>Diapers</h3>
+            <table>
+                <tr>
+                    <th>Date</th>
+                    <th>Event</th>
+                    <th>Time</th>
+                </tr>
+                {% for event in events_last_3_days['Diapers'] %}
+                <tr>
+                    <td>{{ event.timestamp.split(' at ')[0] }}</td>
+                    <td>{{ event.key_label }}</td>
+                    <td>{{ event.timestamp.split(' at ')[1] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    
 
     <h2>Today's Counts</h2>
     <table>
