@@ -83,22 +83,30 @@ def get_image_files():
 
 def get_events_last_3_days():
     conn = get_db_connection()
-    cur = conn.cursor()
+    events = {'Feeding': [], 'Diapers': []}
     three_days_ago = datetime.now(pytz.timezone(TIMEZONE)) - timedelta(days=3)
-    cur.execute("""
-        SELECT key_label, timestamp
-        FROM keypresses
-        WHERE DATE(timestamp) >= ?
-        ORDER BY timestamp DESC
-    """, (three_days_ago.strftime('%Y-%m-%d'),))
-    events = []
-    for row in cur.fetchall():
-        # Convert each timestamp to the local timezone and format it
-        local_timestamp = format_datetime(row['timestamp'], TIMEZONE)
-        events.append({
-            'key_label': row['key_label'], 
-            'timestamp': local_timestamp  # This is now a string formatted as "Month DaySuffix, Year at HH:MMAM/PM"
-        })
+    # Assuming these are the correct labels for categorization
+    labels = {
+        'Feeding': ['Feeding Harper', 'Feeding Sophie'],
+        'Diapers': ['Pee Harper','Poo Harper', 'Pee Sophie', 'Poo Sophie']
+    }
+    for category, label_list in labels.items():
+        for label in label_list:
+            cur = conn.execute("""
+                SELECT key_label, timestamp
+                FROM keypresses
+                WHERE DATE(timestamp) >= ? AND key_label = ?
+                ORDER BY timestamp DESC
+            """, (three_days_ago.strftime('%Y-%m-%d'), label))
+            fetched_events = cur.fetchall()
+            print(f"Events fetched for {label}: {fetched_events}")  # Debugging line
+            for row in fetched_events:
+                events[category].append({
+                    'key_label': row['key_label'],
+                    'timestamp': format_datetime(row['timestamp'], TIMEZONE)
+                })
+    conn.close()
+    print(f"Events categorized: {events}")  # Debugging line
     return events
 
 @app.route('/')
