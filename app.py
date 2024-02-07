@@ -91,8 +91,14 @@ def get_events_last_3_days():
         WHERE DATE(timestamp) >= ?
         ORDER BY timestamp DESC
     """, (three_days_ago.strftime('%Y-%m-%d'),))
-    events = [{'key_label': row['key_label'], 'timestamp': format_datetime(row['timestamp'], TIMEZONE)} for row in cur.fetchall()]
-    conn.close()
+    events = []
+    for row in cur.fetchall():
+        # Convert each timestamp to the local timezone and format it
+        local_timestamp = format_datetime(row['timestamp'], TIMEZONE)
+        events.append({
+            'key_label': row['key_label'], 
+            'timestamp': local_timestamp  # This is now a string formatted as "Month DaySuffix, Year at HH:MMAM/PM"
+        })
     return events
 
 @app.route('/')

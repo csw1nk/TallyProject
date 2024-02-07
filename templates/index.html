@@ -190,9 +190,8 @@
         </tr>
         {% for event in events_last_3_days %}
 <tr>
-    <td>{{ event.timestamp.split(' ')[0] }}</td> <!-- Date part -->
+    <td>{{ event.timestamp }}</td> <!-- Directly display the formatted timestamp -->
     <td>{{ event.key_label }}</td>
-    <td>{{ event.timestamp.split(' ')[1] }}</td> <!-- Time part -->
 </tr>
 {% endfor %}
     </table>
