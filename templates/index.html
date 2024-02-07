@@ -43,10 +43,15 @@
             background-color: #ffb3e6; /* Slightly darker pink on hover */
         }
         .content-image {
-            max-width: 90%; /* Adjust for mobile */
+            max-width: 100%; /* Full width on smaller screens */
             height: auto;
             display: block;
             margin: 20px auto;
+        }
+        @media (min-width: 768px) { /* For desktop screens */
+            .content-image {
+                max-width: 50%; /* Adjust to a reasonable size on desktop */
+            }
         }
     </style>
 </head>
@@ -71,19 +76,39 @@
     <img src="{{ url_for('static', filename='assets/images/girlsbasket.jpg') }}" alt="photo of the girls in basket day 2 of life" class="content-image">
 
     <h2>Last Event Times</h2>
-    <table>
-        <tr>
-            <th>Activity Type</th>
-            <th>Last Times</th>
-        </tr>
-        {% for key, time in last_event_times.items() %}
-        <tr>
-            <td>{{ key }}</td>
-            <td>{{ time }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-
+    <div style="display: flex; justify-content: space-around;">
+        <div>
+            <h3>Feedings</h3>
+            <table>
+                <tr>
+                    <th>Activity Type</th>
+                    <th>Last Time</th>
+                </tr>
+                {% for key, time in last_event_times['Feeding'].items() %}
+                <tr>
+                    <td>{{ key }}</td>
+                    <td>{{ time }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div>
+            <h3>Diapers</h3>
+            <table>
+                <tr>
+                    <th>Activity Type</th>
+                    <th>Last Time</th>
+                </tr>
+                {% for key, time in last_event_times['Diapers'].items() %}
+                <tr>
+                    <td>{{ key }}</td>
+                    <td>{{ time }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    
     <h2>Today's Counts</h2>
     <table>
         <tr>
