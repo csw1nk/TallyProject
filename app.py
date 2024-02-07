@@ -75,12 +75,28 @@ def get_image_files():
             image_files.append(os.path.join('assets/images', filename))
     return image_files
 
+def get_events_last_3_days():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    three_days_ago = datetime.now(pytz.timezone(TIMEZONE)) - timedelta(days=3)
+    cur.execute("""
+        SELECT key_label, timestamp
+        FROM keypresses
+        WHERE DATE(timestamp) >= ?
+        ORDER BY timestamp DESC
+    """, (three_days_ago.strftime('%Y-%m-%d'),))
+    events = cur.fetchall()
+    conn.close()
+    return events
+
 @app.route('/')
 def index():
     most_recent_keypress = get_most_recent_keypress()
     simplified_last_update = format_datetime(most_recent_keypress) if most_recent_keypress else "No recent updates"
     last_event_times = get_last_event_times()  # This now contains both 'Feeding' and 'Diapers' categories
     image_files = get_image_files()  # Get list of image files
+    events_last_3_days = get_events_last_3_days()  # Fetch events for the last 3 days
+
 
     return render_template('index.html', 
                            key_counts=get_key_counts(), 
@@ -88,7 +104,8 @@ def index():
                            today_counts=get_today_counts(), 
                            average_counts_per_day=get_average_counts_per_day(),
                            last_updated=simplified_last_update,
-                           image_files=image_files)
+                           image_files=image_files,
+                           events_last_3_days=events_last_3_days)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

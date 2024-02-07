@@ -181,6 +181,22 @@
         </div>
     </div>
     
+    <h2>Events in the Last 3 Days</h2>
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Event</th>
+            <th>Time</th>
+        </tr>
+        {% for event in events_last_3_days %}
+        <tr>
+            <td>{{ event.timestamp.strftime('%Y-%m-%d') }}</td>
+            <td>{{ event.key_label }}</td>
+            <td>{{ event.timestamp.strftime('%H:%M:%S') }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
     <h2>Today's Counts</h2>
     <table>
         <tr>
