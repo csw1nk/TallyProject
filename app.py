@@ -109,6 +109,33 @@ def get_events_last_3_days():
     print(f"Events categorized: {events}")  # Debugging line
     return events
 
+def get_activity_counts_last_7_days():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    seven_days_ago = datetime.now(pytz.timezone(TIMEZONE)) - timedelta(days=6)  # Include today, so go back 6 days
+    data = {
+        'dates': [],
+        'feedings': [],
+        'pees': [],
+        'poos': [],
+    }
+    for i in range(7):
+        date = seven_days_ago + timedelta(days=i)
+        data['dates'].append(date.strftime('%Y-%m-%d'))
+        for activity in ['Feeding Harper', 'Feeding Sophie', 'Pee Harper', 'Pee Sophie', 'Poo Harper', 'Poo Sophie']:
+            cur.execute("""
+                SELECT COUNT(*) FROM keypresses
+                WHERE DATE(timestamp) = ? AND key_label = ?
+            """, (date.strftime('%Y-%m-%d'), activity))
+            count = cur.fetchone()[0]
+            if 'Feeding' in activity:
+                data['feedings'].append(count)
+            elif 'Pee' in activity:
+                data['pees'].append(count)
+            elif 'Poo' in activity:
+                data['poos'].append(count)
+    return data
+
 @app.route('/')
 def index():
     most_recent_keypress = get_most_recent_keypress()
@@ -116,7 +143,7 @@ def index():
     last_event_times = get_last_event_times()  # This now contains both 'Feeding' and 'Diapers' categories
     image_files = get_image_files()  # Get list of image files
     events_last_3_days = get_events_last_3_days()  # Fetch events for the last 3 days
-
+    activity_counts_last_7_days = get_activity_counts_last_7_days()
 
     return render_template('index.html', 
                            key_counts=get_key_counts(), 
@@ -125,7 +152,8 @@ def index():
                            average_counts_per_day=get_average_counts_per_day(),
                            last_updated=simplified_last_update,
                            image_files=image_files,
-                           events_last_3_days=events_last_3_days)
+                           events_last_3_days=events_last_3_days,
+                           activity_counts_last_7_days=activity_counts_last_7_days)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
