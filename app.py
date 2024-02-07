@@ -85,7 +85,7 @@ def get_events_last_3_days():
         WHERE DATE(timestamp) >= ?
         ORDER BY timestamp DESC
     """, (three_days_ago.strftime('%Y-%m-%d'),))
-    events = cur.fetchall()
+    events = [{'key_label': row['key_label'], 'timestamp': format_datetime(row['timestamp'])} for row in cur.fetchall()]
     conn.close()
     return events
 
