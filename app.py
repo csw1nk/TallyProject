@@ -3,6 +3,7 @@ import sqlite3
 from datetime import datetime, timedelta
 import pytz
 import os
+from pytz import timezone
 
 app = Flask(__name__)
 DATABASE = 'tally.db'
@@ -59,12 +60,17 @@ def get_average_counts_per_day():
     """Calculate the average count per day for each key press."""
     return {row['key_label']: row['total_count'] / row['days'] for row in query_db("SELECT key_label, COUNT(*) as total_count, COUNT(DISTINCT DATE(timestamp)) as days FROM keypresses GROUP BY key_label") if row['days'] > 0}
 
-def format_datetime(datetime_str, local_tz=TIMEZONE):
+def format_datetime(datetime_str, local_tz='America/New_York'):
     """Format datetime string to a more readable form, converting UTC to local timezone."""
-    utc_dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo=pytz.utc)
-    local_dt = utc_dt.astimezone(pytz.timezone(local_tz))
+    utc_tz = pytz.utc
+    local_timezone = timezone(local_tz)
+    utc_dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+    utc_dt = utc_tz.localize(utc_dt)  # Localize as UTC
+    local_dt = utc_dt.astimezone(local_timezone)  # Convert to local timezone
+    # Format with the appropriate suffix for the day
     suffix = ["th", "st", "nd", "rd"][(local_dt.day % 10) - 1 if local_dt.day % 10 < 4 and not 11 <= local_dt.day <= 13 else 0]
-    return local_dt.strftime(f"%B {local_dt.day}{suffix}, %Y at %I:%M%p")
+    formatted_datetime = local_dt.strftime(f"%B {local_dt.day}{suffix}, %Y at %I:%M%p")
+    return formatted_datetime
 
 def get_image_files():
     """List all image files in the specified directory."""
@@ -78,19 +84,14 @@ def get_image_files():
 def get_events_last_3_days():
     conn = get_db_connection()
     cur = conn.cursor()
-    three_days_ago = datetime.now() - timedelta(days=3)
+    three_days_ago = datetime.now(pytz.timezone(TIMEZONE)) - timedelta(days=3)
     cur.execute("""
         SELECT key_label, timestamp
         FROM keypresses
         WHERE DATE(timestamp) >= ?
         ORDER BY timestamp DESC
     """, (three_days_ago.strftime('%Y-%m-%d'),))
-    events = []
-    for row in cur.fetchall():
-        # Assuming row['timestamp'] is a string in '%Y-%m-%d %H:%M:%S' format
-        timestamp = datetime.strptime(row['timestamp'], '%Y-%m-%d %H:%M:%S')
-        formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
-        events.append({'key_label': row['key_label'], 'timestamp': formatted_timestamp})
+    events = [{'key_label': row['key_label'], 'timestamp': format_datetime(row['timestamp'], TIMEZONE)} for row in cur.fetchall()]
     conn.close()
     return events
 
