@@ -217,38 +217,7 @@
 </div>
     
     <!-- Chart Canvas -->
-<div>
-    <canvas id="activityChart"></canvas>
-</div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var ctx = document.getElementById('activityChart').getContext('2d');
-        var activityChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: {{ activity_counts_last_7_days.dates | tojson }},
-                datasets: [{
-                    label: 'Feedings',
-                    data: {{ activity_counts_last_7_days.feedings | tojson }},
-                    borderColor: 'rgb(255, 99, 132)',
-                    tension: 0.1
-                }, {
-                    label: 'Pees',
-                    data: {{ activity_counts_last_7_days.pees | tojson }},
-                    borderColor: 'rgb(54, 162, 235)',
-                    tension: 0.1
-                }, {
-                    label: 'Poos',
-                    data: {{ activity_counts_last_7_days.poos | tojson }},
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1
-                }]
-            },
-            options: {}
-        });
-    });
-    </script>
+    <img src="{{ url_for('activity_plot') }}" alt="Activity Chart" style="max-width: 100%; height: auto;">
     
     <h2>Today's Counts</h2>
     <table>
