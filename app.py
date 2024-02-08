@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import pytz
 import os
 from pytz import timezone
+import json
 
 app = Flask(__name__)
 DATABASE = 'tally.db'
