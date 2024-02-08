@@ -18,18 +18,17 @@
             color: #ff66cc; /* Soft pink color for the headings */
         }
         table {
-            width: 100%; /* Full width on mobile */
-            max-width: 80%; /* Max width on desktop */
+    	    width: auto; /* Only as wide as its content requires */
             margin: 20px auto;
             border-collapse: collapse;
             border-radius: 15px; /* Rounded corners for the table */
             overflow: hidden; /* Ensures the rounded corners affect child elements */
             box-shadow: 0 0 10px #888888; /* Soft shadow for depth */
-        }
+	}
         th, td {
             border: 1px solid #ff99cc; /* Light pink border for table cells */
-            padding: 8px;
-            text-align: left;
+            padding: 9px;
+            text-align: left;           
             border-radius: 10px; /* Rounded corners for table cells */
         }
         th {
@@ -43,6 +42,17 @@
         tr:hover {
             background-color: #ffb3e6; /* Slightly darker pink on hover */
         }
+	@media (max-width: 768px) {
+    th, td {
+        padding: 4px 6px; /* Even smaller padding for smaller screens */
+        font-size: smaller; /* Reduce font size on small screens */
+    }
+    table {
+        width: 100%; /* Full width on smaller screens */
+        max-width: none; /* Override max-width of 80% */
+        box-sizing: border-box; /* Include padding and border in the width */
+    }
+}
         .content-image {
             max-width: 100%; /* Full width on smaller screens */
             height: auto;
