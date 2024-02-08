@@ -108,7 +108,7 @@ def get_events_last_3_days():
     conn.close()
     return events
 
-def get_activity_counts_last_7_days():
+def def get_activity_counts_last_7_days():
     conn = get_db_connection()
     cur = conn.cursor()
     seven_days_ago = datetime.now(pytz.timezone(TIMEZONE)) - timedelta(days=6)  # Include today, so go back 6 days
@@ -120,12 +120,13 @@ def get_activity_counts_last_7_days():
     }
     for i in range(7):
         date = seven_days_ago + timedelta(days=i)
-        data['dates'].append(date.strftime('%Y-%m-%d'))
-        for activity in ['Feeding Harper', 'Feeding Sophie', 'Pee Harper', 'Pee Sophie', 'Poo Harper', 'Poo Sophie']:
+        date_str = date.strftime('%Y-%m-%d')
+        data['dates'].append(date_str)
+        for activity in ['Feeding Harper', 'Feeding Sophie', 'Pee Harper', 'Poo Harper', 'Pee Sophie', 'Poo Sophie']:
             cur.execute("""
                 SELECT COUNT(*) FROM keypresses
                 WHERE DATE(timestamp) = ? AND key_label = ?
-            """, (date.strftime('%Y-%m-%d'), activity))
+            """, (date_str, activity))
             count = cur.fetchone()[0]
             if 'Feeding' in activity:
                 data['feedings'].append(count)
@@ -133,6 +134,8 @@ def get_activity_counts_last_7_days():
                 data['pees'].append(count)
             elif 'Poo' in activity:
                 data['poos'].append(count)
+            print(f"For {activity} on {date_str}, count: {count}")  # Debugging print statement
+    conn.close()
     return data
 
 @app.route('/activity_data')
