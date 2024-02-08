@@ -6,6 +6,7 @@ import os
 from pytz import timezone
 import matplotlib.pyplot as plt
 from io import BytesIO
+from flask import send_file
 
 app = Flask(__name__)
 DATABASE = 'tally.db'
