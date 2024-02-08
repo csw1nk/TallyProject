@@ -183,43 +183,35 @@
     </div>
     
     <h2>Events in the Last 3 Days</h2>
-    <div style="display: flex; justify-content: space-around;">
-        <div>
-            <h3>Feedings</h3>
-            <table>
-                <tr>
-                    <th>Date</th>
-                    <th>Event</th>
-                    <th>Time</th>
-                </tr>
-                {% for event in events_last_3_days['Feeding'] %}
-                <tr>
-                    <td>{{ event.timestamp.split(' at ')[0] }}</td>
-                    <td>{{ event.key_label }}</td>
-                    <td>{{ event.timestamp.split(' at ')[1] }}</td>
-                </tr>
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-around;">
+        {% for category, labels in events_last_3_days.items() %}
+            <div style="margin: 10px;">
+                <h3>{{ category }}</h3>
+                {% for label, events in labels.items() %}
+                    <h4>{{ label }}</h4>
+                    <table border="1" style="width: 100%; margin-bottom: 20px;">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Event</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in events %}
+                                <tr>
+                                    <td>{{ event.timestamp.split(' at ')[0] }}</td>
+                                    <td>{{ event.key_label }}</td>
+                                    <td>{{ event.timestamp.split(' at ')[1] }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 {% endfor %}
-            </table>
-        </div>
-        <div>
-            <h3>Diapers</h3>
-            <table>
-                <tr>
-                    <th>Date</th>
-                    <th>Event</th>
-                    <th>Time</th>
-                </tr>
-                {% for event in events_last_3_days['Diapers'] %}
-                <tr>
-                    <td>{{ event.timestamp.split(' at ')[0] }}</td>
-                    <td>{{ event.key_label }}</td>
-                    <td>{{ event.timestamp.split(' at ')[1] }}</td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
+            </div>
+        {% endfor %}
     </div>
-
+    
     <!-- Chart Canvas -->
 <div>
     <canvas id="activityChart"></canvas>
@@ -254,7 +246,6 @@
     });
     </script>
     
-
     <h2>Today's Counts</h2>
     <table>
         <tr>
