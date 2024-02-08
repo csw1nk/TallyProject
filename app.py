@@ -108,7 +108,7 @@ def get_events_last_3_days():
     conn.close()
     return events
 
-def def get_activity_counts_last_7_days():
+def get_activity_counts_last_7_days():
     conn = get_db_connection()
     cur = conn.cursor()
     seven_days_ago = datetime.now(pytz.timezone(TIMEZONE)) - timedelta(days=6)  # Include today, so go back 6 days
