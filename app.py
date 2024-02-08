@@ -4,9 +4,6 @@ from datetime import datetime, timedelta
 import pytz
 import os
 from pytz import timezone
-import matplotlib.pyplot as plt
-from io import BytesIO
-from flask import send_file
 
 app = Flask(__name__)
 DATABASE = 'tally.db'
@@ -137,31 +134,13 @@ def get_activity_counts_last_7_days():
                 data['poos'].append(count)
     return data
 
-@app.route('/activity_plot.png')
-def activity_plot():
+@app.route('/activity_data')
+def activity_data():
+    # Here you would get your data from the database
     activity_counts = get_activity_counts_last_7_days()
-    dates = activity_counts['dates']
-    feedings = activity_counts['feedings']
-    pees = activity_counts['pees']
-    poos = activity_counts['poos']
 
-    plt.figure(figsize=(10, 5))  # Size of the plot
-    plt.plot(dates, feedings, label='Feedings', color='red')
-    plt.plot(dates, pees, label='Pees', color='blue')
-    plt.plot(dates, poos, label='Poos', color='green')
-    plt.title('Activity Counts over the Last 7 Days')
-    plt.xlabel('Date')
-    plt.ylabel('Count')
-    plt.xticks(rotation=45)
-    plt.legend()
-
-    # Save the plot to a BytesIO object and return that as a response
-    img = BytesIO()
-    plt.savefig(img)
-    img.seek(0)
-    plt.close()
-
-    return send_file(img, mimetype='image/png')
+    # Then return it as JSON
+    return jsonify(activity_counts)
 
 @app.route('/')
 def index():

@@ -215,10 +215,50 @@
         </div>
     {% endfor %}
 </div>
-    
-    <!-- Chart Canvas -->
-    <img src="{{ url_for('activity_plot') }}" alt="Activity Chart" style="max-width: 100%; height: auto;">
-    
+  <!-- Chart Canvas -->
+  <canvas id="activityChart"></canvas>
+<script>
+    const ctx = document.getElementById('activityChart').getContext('2d');
+  
+    fetch('/activity_data')
+      .then(response => response.json())
+      .then(data => {
+        const activityChart = new Chart(ctx, {
+          type: 'line', // Or 'bar', 'pie', etc.
+          data: {
+            labels: data.dates, // Your X-axis labels (dates)
+            datasets: [
+              {
+                label: 'Feedings',
+                data: data.feedings, // Your data for feedings
+                borderColor: 'red',
+                fill: false
+              },
+              {
+                label: 'Pees',
+                data: data.pees, // Your data for pees
+                borderColor: 'blue',
+                fill: false
+              },
+              {
+                label: 'Poos',
+                data: data.poos, // Your data for poos
+                borderColor: 'green',
+                fill: false
+              }
+            ]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      });
+  </script>
+
     <h2>Today's Counts</h2>
     <table>
         <tr>
