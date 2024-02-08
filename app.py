@@ -150,6 +150,8 @@ def index():
     image_files = get_image_files()  # Get list of image files
     events_last_3_days = get_events_last_3_days()  # Fetch events for the last 3 days
     activity_counts_last_7_days = get_activity_counts_last_7_days()
+    activity_data = get_activity_counts_last_7_days()
+    activity_data_json = json.dumps(activity_data)
 
     return render_template('index.html', 
                            key_counts=get_key_counts(), 
@@ -159,7 +161,8 @@ def index():
                            last_updated=simplified_last_update,
                            image_files=image_files,
                            events_last_3_days=events_last_3_days,
-                           activity_counts_last_7_days=activity_counts_last_7_days)
+                           activity_counts_last_7_days=activity_counts_last_7_days,
+                           activity_data_json=activity_data_json)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
