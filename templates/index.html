@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensure proper mobile scaling -->
     <title>Harp & Soph Life Tracker</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"> <!-- Use Google Fonts for consistency -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Roboto', sans-serif; /* More readable font */
@@ -218,6 +219,40 @@
             </table>
         </div>
     </div>
+
+    <!-- Chart Canvas -->
+<div>
+    <canvas id="activityChart"></canvas>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var ctx = document.getElementById('activityChart').getContext('2d');
+        var activityChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ activity_counts_last_7_days.dates | tojson }},
+                datasets: [{
+                    label: 'Feedings',
+                    data: {{ activity_counts_last_7_days.feedings | tojson }},
+                    borderColor: 'rgb(255, 99, 132)',
+                    tension: 0.1
+                }, {
+                    label: 'Pees',
+                    data: {{ activity_counts_last_7_days.pees | tojson }},
+                    borderColor: 'rgb(54, 162, 235)',
+                    tension: 0.1
+                }, {
+                    label: 'Poos',
+                    data: {{ activity_counts_last_7_days.poos | tojson }},
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {}
+        });
+    });
+    </script>
     
 
     <h2>Today's Counts</h2>
