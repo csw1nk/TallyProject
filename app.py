@@ -83,9 +83,8 @@ def get_image_files():
 
 def get_events_last_3_days():
     conn = get_db_connection()
-    events = {'Feeding': [], 'Diapers': []}
+    events = {'Feeding': {}, 'Diapers': {}}
     three_days_ago = datetime.now(pytz.timezone(TIMEZONE)) - timedelta(days=3)
-    # Assuming these are the correct labels for categorization
     labels = {
         'Feeding': ['Feeding Harper', 'Feeding Sophie'],
         'Diapers': ['Pee Harper','Poo Harper', 'Pee Sophie', 'Poo Sophie']
@@ -99,14 +98,13 @@ def get_events_last_3_days():
                 ORDER BY timestamp DESC
             """, (three_days_ago.strftime('%Y-%m-%d'), label))
             fetched_events = cur.fetchall()
-            print(f"Events fetched for {label}: {fetched_events}")  # Debugging line
-            for row in fetched_events:
-                events[category].append({
-                    'key_label': row['key_label'],
-                    'timestamp': format_datetime(row['timestamp'], TIMEZONE)
-                })
+            if category not in events:
+                events[category] = {}
+            events[category][label] = [{
+                'key_label': row['key_label'],
+                'timestamp': format_datetime(row['timestamp'], TIMEZONE)
+            } for row in fetched_events]
     conn.close()
-    print(f"Events categorized: {events}")  # Debugging line
     return events
 
 def get_activity_counts_last_7_days():
