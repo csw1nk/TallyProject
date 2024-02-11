@@ -81,8 +81,8 @@ def format_datetime(datetime_str, local_tz='America/New_York'):
         return f"Invalid datetime: {datetime_str}"
 
 def get_last_record_timestamp():
-    """Get the timestamp of the last record from the database."""
-    query = "SELECT MAX(created_at) as last_update FROM (SELECT created_at FROM keypresses UNION ALL SELECT created_at FROM notes)"
+    """Get the timestamp of the last record from the keypresses table."""
+    query = "SELECT MAX(timestamp) as last_update FROM keypresses"
     result = query_db(query, one=True)
     return format_datetime(result['last_update']) if result and result['last_update'] else "No records found"
         
