@@ -81,23 +81,24 @@ def format_datetime(datetime_str, local_tz='America/New_York'):
         # Handle invalid datetime strings gracefully
         return f"Invalid datetime: {datetime_str}"
 
-def fetch_and_format_last_updated():
-    """Fetch the most recent update timestamp from the database and format it for display."""
-    query = "SELECT timestamp FROM keypresses ORDER BY timestamp DESC LIMIT 1"
-    with get_db_connection() as conn:
-        cur = conn.execute(query)
-        result = cur.fetchone()
-        if result and result['timestamp']:
-            # Use the same formatting function that's working elsewhere in your application
-            try:
-                # Assuming that the timestamps in the database are stored in the local timezone
-                formatted_datetime = format_datetime(result['timestamp'])
-                return formatted_datetime
-            except Exception as e:  # Catch any exception and log it for diagnosis
-                logging.error(f"Error in formatting datetime: {e} - Timestamp: {result['timestamp']}")
-                return "Invalid datetime format"
+def get_last_record_timestamp():
+    conn = get_db_connection()
+    try:
+        cur = conn.execute("""
+            SELECT timestamp FROM keypresses
+            ORDER BY timestamp DESC
+            LIMIT 1
+        """)
+        last_record = cur.fetchone()
+        conn.close()
+        if last_record and 'timestamp' in last_record:
+            return format_datetime(last_record['timestamp'], TIMEZONE)
         else:
-            return "No recent updates"
+            return "No records found"
+    except Exception as e:
+        conn.close()
+        logging.error(f"Error retrieving last record's timestamp: {e}")
+        return "Error retrieving data"
         
 def get_image_files():
     """List all image files in the specified directory."""
@@ -173,7 +174,7 @@ def index():
     # Fetch event times and image files
     last_event_times = get_last_event_times()
     image_files = get_image_files()
-    last_updated = fetch_and_format_last_updated()
+    last_updated = get_last_record_timestamp()
     
     # Fetch events for the last 3 days
     events_last_3_days = get_events_last_3_days()
