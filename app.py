@@ -87,17 +87,22 @@ def fetch_and_format_last_updated():
     with get_db_connection() as conn:
         cur = conn.execute(query)
         result = cur.fetchone()
-        if result and result['last_updated']:
-            # Convert the timestamp from string to datetime object assuming it is stored in UTC in the database
-            utc_dt = datetime.strptime(result['last_updated'], "%Y-%m-%d %H:%M:%S")
-            utc_tz = pytz.utc
-            local_tz = timezone(TIMEZONE)
-            # Convert from UTC to local timezone
-            local_dt = utc_tz.localize(utc_dt).astimezone(local_tz)
-            # Format the datetime object
-            suffix = ["th", "st", "nd", "rd"][(local_dt.day % 10) - 1 if local_dt.day % 10 < 4 and not 11 <= local_dt.day <= 13 else 0]
-            formatted_datetime = local_dt.strftime(f"%B {local_dt.day}{suffix}, %Y at %I:%M%p")
-            return formatted_datetime
+        if result and result['last_updated'] and result['last_updated'] != 'timestamp':
+            # Convert the timestamp from string to datetime object
+            try:
+                utc_dt = datetime.strptime(result['last_updated'], "%Y-%m-%d %H:%M:%S")
+                utc_tz = pytz.utc
+                local_tz = timezone(TIMEZONE)
+                # Convert from UTC to local timezone
+                local_dt = utc_tz.localize(utc_dt).astimezone(local_tz)
+                # Format the datetime object
+                suffix = ["th", "st", "nd", "rd"][(local_dt.day % 10) - 1 if local_dt.day % 10 < 4 and not 11 <= local_dt.day <= 13 else 0]
+                formatted_datetime = local_dt.strftime(f"%B {local_dt.day}{suffix}, %Y at %I:%M%p")
+                return formatted_datetime
+            except ValueError as e:
+                # Log the error for debugging
+                logging.error(f"Error formatting datetime: {e} - Data: {result['last_updated']}")
+                return "Invalid datetime format"
         else:
             return "No recent updates"
 
