@@ -66,13 +66,12 @@ def get_average_counts_per_day():
     return {row['key_label']: row['total_count'] / row['days'] for row in query_db("SELECT key_label, COUNT(*) as total_count, COUNT(DISTINCT DATE(timestamp)) as days FROM keypresses GROUP BY key_label") if row['days'] > 0}
 
 def format_datetime(datetime_str, local_tz='America/New_York'):
-    """Format datetime string to a more readable form, converting UTC to local timezone."""
+    """Format datetime string to a more readable form."""
     try:
-        utc_tz = pytz.utc
         local_timezone = timezone(local_tz)
-        utc_dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
-        utc_dt = utc_tz.localize(utc_dt)  # Localize as UTC
-        local_dt = utc_dt.astimezone(local_timezone)  # Convert to local timezone
+        # Directly parse the timestamp as America/New_York time
+        local_dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+        local_dt = local_timezone.localize(local_dt)  # Make it timezone-aware
         # Format with the appropriate suffix for the day
         suffix = ["th", "st", "nd", "rd"][(local_dt.day % 10) - 1 if local_dt.day % 10 < 4 and not 11 <= local_dt.day <= 13 else 0]
         formatted_datetime = local_dt.strftime(f"%B {local_dt.day}{suffix}, %Y at %I:%M%p")
@@ -84,13 +83,12 @@ def format_datetime(datetime_str, local_tz='America/New_York'):
 def get_last_record_timestamp():
     conn = get_db_connection()
     try:
-        # Select the most recent timestamp from the keypresses table
         cur = conn.execute("SELECT timestamp FROM keypresses ORDER BY timestamp DESC LIMIT 1")
         last_record = cur.fetchone()
         conn.close()
         if last_record and last_record['timestamp']:
-            # Format the timestamp directly without assuming it's in UTC
-            formatted_datetime = format_datetime(last_record['timestamp'])
+            # Pass the timestamp to the formatting function
+            formatted_datetime = format_datetime(last_record['timestamp'], TIMEZONE)
             return formatted_datetime
         else:
             return "No records found"
