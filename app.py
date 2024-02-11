@@ -52,8 +52,7 @@ def get_last_event_times():
                 cur = conn.execute("SELECT key_label, MAX(timestamp) FROM keypresses WHERE key_label = ? GROUP BY key_label", (label,))
                 row = cur.fetchone()
                 if row:
-                    last_events[category][row['key_label']] = format_datetime(row['MAX(timestamp)'])
-    
+                    last_events[category][row['key_label']] = format_datetime(row['MAX(timestamp)'])    
     return last_events
 
 def get_today_counts():
@@ -97,7 +96,7 @@ def get_last_record_timestamp():
         conn.close()
         logging.error(f"Error retrieving last record's timestamp: {e}")
         return "Error retrieving data"
-        
+
 def get_image_files():
     """List all image files in the specified directory."""
     image_files = []
