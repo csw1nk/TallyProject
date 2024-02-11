@@ -62,20 +62,24 @@ def get_today_counts():
     return {row['key_label']: row['COUNT(*)'] for row in query_db("SELECT key_label, COUNT(*) FROM keypresses WHERE DATE(timestamp) = ? GROUP BY key_label", [today])}
 
 def get_average_counts_per_day():
-    """Calculate the average count per day for each key press, rounded to 2 decimal places."""
-    return {row['key_label']: round(row['total_count'] / row['days'], 2) for row in query_db("SELECT key_label, COUNT(*) as total_count, COUNT(DISTINCT DATE(timestamp)) as days FROM keypresses GROUP BY key_label") if row['days'] > 0}
+    """Calculate the average count per day for each key press."""
+    return {row['key_label']: row['total_count'] / row['days'] for row in query_db("SELECT key_label, COUNT(*) as total_count, COUNT(DISTINCT DATE(timestamp)) as days FROM keypresses GROUP BY key_label") if row['days'] > 0}
 
 def format_datetime(datetime_str, local_tz='America/New_York'):
     """Format datetime string to a more readable form, converting UTC to local timezone."""
-    utc_tz = pytz.utc
-    local_timezone = timezone(local_tz)
-    utc_dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
-    utc_dt = utc_tz.localize(utc_dt)  # Localize as UTC
-    local_dt = utc_dt.astimezone(local_timezone)  # Convert to local timezone
-    # Format with the appropriate suffix for the day
-    suffix = ["th", "st", "nd", "rd"][(local_dt.day % 10) - 1 if local_dt.day % 10 < 4 and not 11 <= local_dt.day <= 13 else 0]
-    formatted_datetime = local_dt.strftime(f"%B {local_dt.day}{suffix}, %Y at %I:%M%p")
-    return formatted_datetime
+    try:
+        utc_tz = pytz.utc
+        local_timezone = timezone(local_tz)
+        utc_dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+        utc_dt = utc_tz.localize(utc_dt)  # Localize as UTC
+        local_dt = utc_dt.astimezone(local_timezone)  # Convert to local timezone
+        # Format with the appropriate suffix for the day
+        suffix = ["th", "st", "nd", "rd"][(local_dt.day % 10) - 1 if local_dt.day % 10 < 4 and not 11 <= local_dt.day <= 13 else 0]
+        formatted_datetime = local_dt.strftime(f"%B {local_dt.day}{suffix}, %Y at %I:%M%p")
+        return formatted_datetime
+    except ValueError as e:
+        # Handle invalid datetime strings gracefully
+        return f"Invalid datetime: {datetime_str}"
 
 def get_image_files():
     """List all image files in the specified directory."""
