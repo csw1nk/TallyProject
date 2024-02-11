@@ -81,17 +81,20 @@ def format_datetime(datetime_str, local_tz='America/New_York'):
         return f"Invalid datetime: {datetime_str}"
 
 def parse_and_format_datetime(datetime_str, timezone_str):
-    # Parse the datetime string into a datetime object
-    dt_obj = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
-    
-    # Assuming you want to convert to a specific timezone
-    # Ensure your environment has the 'pytz' library and you know your target timezone
-    target_timezone = pytz.timezone(timezone_str)
-    localized_dt = dt_obj.replace(tzinfo=pytz.utc).astimezone(target_timezone)
-    
-    # Format the datetime object as needed, e.g., back to string
-    formatted_datetime = localized_dt.strftime("%Y-%m-%d %H:%M:%S %Z")
-    return formatted_datetime
+    try:
+        # Parse the datetime string into a datetime object
+        dt_obj = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+        
+        # Assuming you want to convert to a specific timezone
+        target_timezone = pytz.timezone(timezone_str)
+        localized_dt = dt_obj.replace(tzinfo=pytz.utc).astimezone(target_timezone)
+        
+        # Format the datetime object as needed, e.g., back to string
+        formatted_datetime = localized_dt.strftime("%Y-%m-%d %H:%M:%S %Z")
+        return formatted_datetime
+    except ValueError as e:
+        logging.error(f"Error parsing/formatting datetime: {str(e)}")
+        return None
 
 def get_last_record_timestamp():
     conn = get_db_connection()
@@ -100,9 +103,9 @@ def get_last_record_timestamp():
         cur = conn.execute("SELECT MAX(timestamp) as latest_timestamp FROM keypresses")
         last_record = cur.fetchone()
         if last_record and last_record['latest_timestamp']:
-            # Use the new parsing and formatting function
+            # Correctly access the 'latest_timestamp' value for parsing and formatting
             formatted_datetime = parse_and_format_datetime(last_record['latest_timestamp'], TIMEZONE)
-            return formatted_datetime
+            return formatted_datetime if formatted_datetime else "Error formatting timestamp"
         else:
             return "No records found"
     except Exception as e:
