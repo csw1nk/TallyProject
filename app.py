@@ -86,17 +86,28 @@ def get_last_record_timestamp():
     try:
         cur = conn.execute("SELECT timestamp FROM keypresses ORDER BY timestamp DESC LIMIT 1")
         last_record = cur.fetchone()
-        conn.close()
-        if last_record and last_record['timestamp']:
-            # Pass the timestamp to the formatting function
-            formatted_datetime = format_datetime(last_record['timestamp'], TIMEZONE)
+        if last_record:
+            raw_timestamp = last_record['timestamp']  # Capture raw timestamp
+            logging.debug(f"Raw timestamp retrieved: {raw_timestamp}")  # Log raw timestamp for review
+            
+            # Convert the string timestamp to a datetime object
+            timestamp_dt = datetime.strptime(raw_timestamp, '%Y-%m-%d %H:%M:%S')
+            
+            # Convert the datetime object to the desired timezone (if necessary)
+            tz = pytz.timezone(TIMEZONE)
+            timestamp_dt = timestamp_dt.replace(tzinfo=pytz.utc).astimezone(tz)
+            
+            # Format the datetime object back to a string if needed
+            formatted_datetime = timestamp_dt.strftime('%Y-%m-%d %H:%M:%S %Z')
+            
             return formatted_datetime
         else:
             return "No records found"
     except Exception as e:
-        conn.close()
         logging.error(f"Error retrieving last record's timestamp: {e}")
-        return "Error retrieving data"
+        return "Error retrieving data: {e}"
+    finally:
+        conn.close()
         
 def get_image_files():
     """List all image files in the specified directory."""
