@@ -273,27 +273,27 @@
         const sophieCtx = document.getElementById('sophieChart').getContext('2d');
 
         const harperChart = new Chart(harperCtx, {
-    type: 'bar', // 'line', 'bar', etc., depending on the desired chart type
+    type: 'line', // Change chart type to line
     data: {
-        labels: harperData.dates, // An array of date strings
+        labels: harperData.dates,
         datasets: [{
             label: 'Feedings',
-            data: harperData.data.Feeding, // Array of feeding counts
-            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            data: harperData.data.Feeding,
             borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 1
+            fill: false,
+            tension: 0.1 // Smooth the line
         }, {
             label: 'Pees',
-            data: harperData.data.Pee, // Array of pee counts
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            data: harperData.data.Pee,
             borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
+            fill: false,
+            tension: 0.1 // Smooth the line
         }, {
             label: 'Poos',
-            data: harperData.data.Poo, // Array of poo counts
-            backgroundColor: 'rgba(255, 206, 86, 0.2)',
+            data: harperData.data.Poo,
             borderColor: 'rgba(255, 206, 86, 1)',
-            borderWidth: 1
+            fill: false,
+            tension: 0.1 // Smooth the line
         }]
     },
     options: {
@@ -304,28 +304,28 @@
         }
     }
 });
-const sophieChart = new Chart(sophieData, {
-    type: 'bar', // 'line', 'bar', etc., depending on the desired chart type
+const sophieChart = new Chart(sophieCtx, {
+    type: 'line', // Change chart type to line
     data: {
-        labels: sophieData.dates, // An array of date strings
+        labels: sophieData.dates,
         datasets: [{
             label: 'Feedings',
-            data: sophieData.data.Feeding, // Array of feeding counts
-            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            data: sophieData.data.Feeding,
             borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 1
+            fill: false,
+            tension: 0.1 // Smooth the line
         }, {
             label: 'Pees',
-            data: sophieData.data.Pee, // Array of pee counts
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            data: sophieData.data.Pee,
             borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
+            fill: false,
+            tension: 0.1 // Smooth the line
         }, {
             label: 'Poos',
-            data: sophieData.data.Poo, // Array of poo counts
-            backgroundColor: 'rgba(255, 206, 86, 0.2)',
+            data: sophieData.data.Poo,
             borderColor: 'rgba(255, 206, 86, 1)',
-            borderWidth: 1
+            fill: false,
+            tension: 0.1 // Smooth the line
         }]
     },
     options: {
