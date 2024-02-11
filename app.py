@@ -68,6 +68,9 @@ def get_average_counts_per_day():
 def format_datetime(datetime_str, local_tz='America/New_York'):
     """Format datetime string to a more readable form, converting UTC to local timezone."""
     try:
+        if datetime_str == "timestamp":
+            return "No recent updates"
+        
         utc_tz = pytz.utc
         local_timezone = timezone(local_tz)
         utc_dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
