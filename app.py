@@ -83,7 +83,7 @@ def get_image_files():
     for filename in os.listdir(IMAGE_DIR):
         if filename.endswith(('.png', '.jpg', '.jpeg', '.gif')):
             # Note: Adjust the path based on how you want to reference it in the template
-            image_files.append(os.path.join('assets/images', filename))
+            image_files.append(os.path.join('assets/hospital_images', filename))
     return image_files
 
 def get_events_last_3_days():
