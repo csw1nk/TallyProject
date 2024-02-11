@@ -65,27 +65,21 @@ def get_average_counts_per_day():
     """Calculate the average count per day for each key press."""
     return {row['key_label']: row['total_count'] / row['days'] for row in query_db("SELECT key_label, COUNT(*) as total_count, COUNT(DISTINCT DATE(timestamp)) as days FROM keypresses GROUP BY key_label") if row['days'] > 0}
 
-def fetch_and_format_last_updated():
-    """Fetch the most recent update timestamp from the database and format it for display."""
-    query = "SELECT MAX(timestamp) as last_updated FROM keypresses"
-    with get_db_connection() as conn:
-        cur = conn.execute(query)
-        result = cur.fetchone()
-        if result and result['last_updated']:
-            try:
-                # Assuming your database stores timestamps in the same timezone as your application's setting (e.g., America/New_York)
-                local_tz = timezone(TIMEZONE)
-                # Parse the timestamp without assuming it's in UTC
-                local_dt = datetime.strptime(result['last_updated'], "%Y-%m-%d %H:%M:%S")
-                local_dt = local_tz.localize(local_dt)  # Make it timezone-aware
-                # Format the datetime object
-                formatted_datetime = local_dt.strftime("%B %d, %Y at %I:%M%p")
-                return formatted_datetime
-            except ValueError as e:
-                logging.error(f"Error formatting datetime: {e} - Data: {result['last_updated']}")
-                return "Invalid datetime format"
-        else:
-            return "No recent updates"
+def format_datetime(datetime_str, local_tz='America/New_York'):
+    """Format datetime string to a more readable form, converting UTC to local timezone."""
+    try:
+        utc_tz = pytz.utc
+        local_timezone = timezone(local_tz)
+        utc_dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+        utc_dt = utc_tz.localize(utc_dt)  # Localize as UTC
+        local_dt = utc_dt.astimezone(local_timezone)  # Convert to local timezone
+        # Format with the appropriate suffix for the day
+        suffix = ["th", "st", "nd", "rd"][(local_dt.day % 10) - 1 if local_dt.day % 10 < 4 and not 11 <= local_dt.day <= 13 else 0]
+        formatted_datetime = local_dt.strftime(f"%B {local_dt.day}{suffix}, %Y at %I:%M%p")
+        return formatted_datetime
+    except ValueError as e:
+        # Handle invalid datetime strings gracefully
+        return f"Invalid datetime: {datetime_str}"
 
 def fetch_and_format_last_updated():
     """Fetch the most recent update timestamp from the database and format it for display."""
