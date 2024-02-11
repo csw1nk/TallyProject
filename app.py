@@ -112,17 +112,17 @@ def get_events_last_3_days():
     conn.close()
     return events
 
-def get_activities_last_4_days_for_twin(twin_name):
+def get_activities_last_X_days_for_twin(twin_name):
     """
     Fetch activity counts for the specified twin for the last 4 days.
     Activities include feeding, pees, and poos.
     """
     # Assuming `twin_name` could be part of the `key_label` like 'Feeding Harper'
     end_date = datetime.now(pytz.timezone(TIMEZONE))
-    start_date = end_date - timedelta(days=3)  # Last 4 days including today
+    start_date = end_date - timedelta(days=6)  # Last 4 days including today
     activities = ['Feeding', 'Pee', 'Poo']
     data = {activity: [] for activity in activities}
-    dates = [(start_date + timedelta(days=d)).strftime('%Y-%m-%d') for d in range(4)]
+    dates = [(start_date + timedelta(days=d)).strftime('%Y-%m-%d') for d in range(7)]
     
     with get_db_connection() as conn:
         for activity in activities:
@@ -160,8 +160,8 @@ def index():
     events_last_3_days = get_events_last_3_days()
     
     # Fetch activity data for Harper and Sophie
-    harper_data = get_activities_last_4_days_for_twin('Harper')
-    sophie_data = get_activities_last_4_days_for_twin('Sophie')
+    harper_data = get_activities_last_X_days_for_twin('Harper')
+    sophie_data = get_activities_last_X_days_for_twin('Sophie')
     
     # Convert the twin data to JSON for the JavaScript charts
     harper_data_json = json.dumps(harper_data)
