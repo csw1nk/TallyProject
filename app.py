@@ -62,8 +62,8 @@ def get_today_counts():
     return {row['key_label']: row['COUNT(*)'] for row in query_db("SELECT key_label, COUNT(*) FROM keypresses WHERE DATE(timestamp) = ? GROUP BY key_label", [today])}
 
 def get_average_counts_per_day():
-    """Calculate the average count per day for each key press, rounded to 2 decimal places."""
-    return {row['key_label']: round(row['total_count'] / row['days'], 2) for row in query_db("SELECT key_label, COUNT(*) as total_count, COUNT(DISTINCT DATE(timestamp)) as days FROM keypresses GROUP BY key_label") if row['days'] > 0}
+    """Calculate the average count per day for each key press."""
+    return {row['key_label']: row['total_count'] / row['days'] for row in query_db("SELECT key_label, COUNT(*) as total_count, COUNT(DISTINCT DATE(timestamp)) as days FROM keypresses GROUP BY key_label") if row['days'] > 0}
 
 def format_datetime(datetime_str, local_tz='America/New_York'):
     """Format datetime string to a more readable form, converting UTC to local timezone."""
