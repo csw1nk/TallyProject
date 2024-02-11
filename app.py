@@ -80,40 +80,11 @@ def format_datetime(datetime_str, local_tz='America/New_York'):
         # Handle invalid datetime strings gracefully
         return f"Invalid datetime: {datetime_str}"
 
-def parse_and_format_datetime(datetime_str, timezone_str):
-    try:
-        # Parse the datetime string into a datetime object
-        dt_obj = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
-        
-        # Assuming you want to convert to a specific timezone
-        target_timezone = pytz.timezone(timezone_str)
-        localized_dt = dt_obj.replace(tzinfo=pytz.utc).astimezone(target_timezone)
-        
-        # Format the datetime object as needed, e.g., back to string
-        formatted_datetime = localized_dt.strftime("%Y-%m-%d %H:%M:%S %Z")
-        return formatted_datetime
-    except ValueError as e:
-        logging.error(f"Error parsing/formatting datetime: {str(e)}")
-        return None
-
 def get_last_record_timestamp():
-    conn = get_db_connection()
-    try:
-        # Query to get the latest timestamp
-        cur = conn.execute("SELECT MAX(timestamp) as latest_timestamp FROM keypresses")
-        last_record = cur.fetchone()
-        if last_record and last_record['latest_timestamp']:
-            # Correctly access the 'latest_timestamp' value for parsing and formatting
-            formatted_datetime = parse_and_format_datetime(last_record['latest_timestamp'], TIMEZONE)
-            return formatted_datetime if formatted_datetime else "Error formatting timestamp"
-        else:
-            return "No records found"
-    except Exception as e:
-        error_message = f"Error retrieving last record's timestamp: {str(e)}"
-        logging.error(error_message)
-        return error_message
-    finally:
-        conn.close()
+    """Get the timestamp of the last record from the database."""
+    query = "SELECT MAX(created_at) as last_update FROM (SELECT created_at FROM keypresses UNION ALL SELECT created_at FROM notes)"
+    result = query_db(query, one=True)
+    return format_datetime(result['last_update']) if result and result['last_update'] else "No records found"
         
 def get_image_files():
     """List all image files in the specified directory."""
