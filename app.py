@@ -87,20 +87,17 @@ def fetch_and_format_last_updated():
     with get_db_connection() as conn:
         cur = conn.execute(query)
         result = cur.fetchone()
-        if result and result['last_updated'] and result['last_updated'] != 'timestamp':
-            # Convert the timestamp from string to datetime object
+        if result and result['last_updated']:
             try:
-                utc_dt = datetime.strptime(result['last_updated'], "%Y-%m-%d %H:%M:%S")
-                utc_tz = pytz.utc
+                # Assuming your database stores timestamps in the same timezone as your application's setting (e.g., America/New_York)
                 local_tz = timezone(TIMEZONE)
-                # Convert from UTC to local timezone
-                local_dt = utc_tz.localize(utc_dt).astimezone(local_tz)
+                # Parse the timestamp without assuming it's in UTC
+                local_dt = datetime.strptime(result['last_updated'], "%Y-%m-%d %H:%M:%S")
+                local_dt = local_tz.localize(local_dt)  # Make it timezone-aware
                 # Format the datetime object
-                suffix = ["th", "st", "nd", "rd"][(local_dt.day % 10) - 1 if local_dt.day % 10 < 4 and not 11 <= local_dt.day <= 13 else 0]
-                formatted_datetime = local_dt.strftime(f"%B {local_dt.day}{suffix}, %Y at %I:%M%p")
+                formatted_datetime = local_dt.strftime("%B %d, %Y at %I:%M%p")
                 return formatted_datetime
             except ValueError as e:
-                # Log the error for debugging
                 logging.error(f"Error formatting datetime: {e} - Data: {result['last_updated']}")
                 return "Invalid datetime format"
         else:
