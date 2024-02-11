@@ -81,21 +81,17 @@ def format_datetime(datetime_str, local_tz='America/New_York'):
         return f"Invalid datetime: {datetime_str}"
 
 def get_last_record_timestamp():
-    conn = get_db_connection()
-    try:
-        cur = conn.execute("SELECT timestamp FROM keypresses ORDER BY timestamp DESC LIMIT 1")
-        last_record = cur.fetchone()
-        conn.close()
-        if last_record and last_record['timestamp']:
-            # Pass the timestamp to the formatting function
-            formatted_datetime = format_datetime(last_record['timestamp'], TIMEZONE)
+    """Fetch the most recent update timestamp from the database and format it for display."""
+    query = "SELECT timestamp FROM keypresses ORDER BY timestamp DESC LIMIT 1"
+    with get_db_connection() as conn:
+        cur = conn.execute(query)
+        result = cur.fetchone()
+        if result and result['timestamp']:
+            # Use the updated format_datetime function
+            formatted_datetime = format_datetime(result['timestamp'])
             return formatted_datetime
         else:
-            return "No records found"
-    except Exception as e:
-        conn.close()
-        logging.error(f"Error retrieving last record's timestamp: {e}")
-        return "Error retrieving data"
+            return "No recent updates"
         
 def get_image_files():
     """List all image files in the specified directory."""
