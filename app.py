@@ -84,15 +84,14 @@ def format_datetime(datetime_str, local_tz='America/New_York'):
 def get_last_record_timestamp():
     conn = get_db_connection()
     try:
-        cur = conn.execute("""
-            SELECT timestamp FROM keypresses
-            ORDER BY timestamp DESC
-            LIMIT 1
-        """)
+        # Select the most recent timestamp from the keypresses table
+        cur = conn.execute("SELECT timestamp FROM keypresses ORDER BY timestamp DESC LIMIT 1")
         last_record = cur.fetchone()
         conn.close()
-        if last_record and 'timestamp' in last_record:
-            return format_datetime(last_record['timestamp'], TIMEZONE)
+        if last_record and last_record['timestamp']:
+            # Format the timestamp directly without assuming it's in UTC
+            formatted_datetime = format_datetime(last_record['timestamp'])
+            return formatted_datetime
         else:
             return "No records found"
     except Exception as e:
