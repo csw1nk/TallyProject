@@ -20,17 +20,21 @@ last_key_states = {key: False for key in key_label_mapping.keys()}
 # CSV backup file name
 CSV_BACKUP = 'tally_backup.csv'
 
-def update_csv_backup(key_label):
+def update_csv_backup(key_label, index):
     """Append the latest key press event to the CSV backup file."""
     with open(CSV_BACKUP, 'a', newline='') as csvfile:
-        fieldnames = ['timestamp', 'key_label']
+        fieldnames = ['id', 'timestamp', 'key_label']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         
         # Write header if the file is newly created
         if csvfile.tell() == 0:
             writer.writeheader()
         
-        writer.writerow({'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'key_label': key_label})
+        # Get current UTC time
+        utc_now = datetime.now(timezone.utc)
+        
+        # Write the row with index, timestamp, and key_label
+        writer.writerow({'id': index, 'timestamp': utc_now.strftime('%Y-%m-%d %H:%M:%S'), 'key_label': key_label})
 
 def update_db(key_label):
     """Insert the latest key press event into the SQLite database and update the CSV backup."""
