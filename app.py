@@ -87,16 +87,19 @@ def fetch_and_format_last_updated():
     with get_db_connection() as conn:
         cur = conn.execute(query)
         result = cur.fetchone()
-        if result and result['timestamp']:
-            # Format the timestamp directly without assuming it's in UTC
-            local_tz = timezone(TIMEZONE)
-            local_dt = datetime.strptime(result['timestamp'], "%Y-%m-%d %H:%M:%S")
-            local_dt = local_tz.localize(local_dt)  # Make it timezone-aware
-            # Format the datetime object
-            formatted_datetime = local_dt.strftime("%B %d, %Y at %I:%M%p")
-            return formatted_datetime
+        if result and 'timestamp' in result and result['timestamp']:
+            try:
+                local_tz = timezone(TIMEZONE)
+                local_dt = datetime.strptime(result['timestamp'], "%Y-%m-%d %H:%M:%S")
+                local_dt = local_tz.localize(local_dt)  # Make it timezone-aware
+                formatted_datetime = local_dt.strftime("%B %d, %Y at %I:%M%p")
+                return formatted_datetime
+            except ValueError as e:
+                logging.error(f"Error formatting datetime: {e} - Data: {result['timestamp']}")
+                return "Invalid datetime format"
         else:
             return "No recent updates"
+
 
 def get_image_files():
     """List all image files in the specified directory."""
