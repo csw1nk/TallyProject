@@ -89,11 +89,16 @@ def fetch_and_format_last_updated():
         result = cur.fetchone()
         if result and result['timestamp']:
             # Use the same formatting function that's working elsewhere in your application
-            formatted_datetime = format_datetime(result['timestamp'])
-            return formatted_datetime
+            try:
+                # Assuming that the timestamps in the database are stored in the local timezone
+                formatted_datetime = format_datetime(result['timestamp'])
+                return formatted_datetime
+            except Exception as e:  # Catch any exception and log it for diagnosis
+                logging.error(f"Error in formatting datetime: {e} - Timestamp: {result['timestamp']}")
+                return "Invalid datetime format"
         else:
             return "No recent updates"
-
+        
 def get_image_files():
     """List all image files in the specified directory."""
     image_files = []
