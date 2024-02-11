@@ -67,15 +67,19 @@ def get_average_counts_per_day():
 
 def format_datetime(datetime_str, local_tz='America/New_York'):
     """Format datetime string to a more readable form, converting UTC to local timezone."""
-    utc_tz = pytz.utc
-    local_timezone = timezone(local_tz)
-    utc_dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
-    utc_dt = utc_tz.localize(utc_dt)  # Localize as UTC
-    local_dt = utc_dt.astimezone(local_timezone)  # Convert to local timezone
-    # Format with the appropriate suffix for the day
-    suffix = ["th", "st", "nd", "rd"][(local_dt.day % 10) - 1 if local_dt.day % 10 < 4 and not 11 <= local_dt.day <= 13 else 0]
-    formatted_datetime = local_dt.strftime(f"%B {local_dt.day}{suffix}, %Y at %I:%M%p")
-    return formatted_datetime
+    try:
+        utc_tz = pytz.utc
+        local_timezone = timezone(local_tz)
+        utc_dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+        utc_dt = utc_tz.localize(utc_dt)  # Localize as UTC
+        local_dt = utc_dt.astimezone(local_timezone)  # Convert to local timezone
+        # Format with the appropriate suffix for the day
+        suffix = ["th", "st", "nd", "rd"][(local_dt.day % 10) - 1 if local_dt.day % 10 < 4 and not 11 <= local_dt.day <= 13 else 0]
+        formatted_datetime = local_dt.strftime(f"%B {local_dt.day}{suffix}, %Y at %I:%M%p")
+        return formatted_datetime
+    except ValueError as e:
+        # Handle invalid datetime strings gracefully
+        return f"Invalid datetime: {datetime_str}"
 
 def get_image_files():
     """List all image files in the specified directory."""
