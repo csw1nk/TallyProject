@@ -81,10 +81,25 @@ def format_datetime(datetime_str, local_tz='America/New_York'):
         # Handle invalid datetime strings gracefully
         return f"Invalid datetime: {datetime_str}"
 
-def get_formatted_last_updated():
-    """Fetch and format the most recent update timestamp from the database."""
-    last_updated_time = query_db("SELECT MAX(timestamp) FROM keypresses", one=True)
-    return format_datetime(last_updated_time['MAX(timestamp)']) if last_updated_time and last_updated_time['MAX(timestamp)'] else "No recent updates"
+def fetch_and_format_last_updated():
+    """Fetch the most recent update timestamp from the database and format it for display."""
+    query = "SELECT MAX(timestamp) as last_updated FROM keypresses"
+    with get_db_connection() as conn:
+        cur = conn.execute(query)
+        result = cur.fetchone()
+        if result and result['last_updated']:
+            # Convert the timestamp from string to datetime object assuming it is stored in UTC in the database
+            utc_dt = datetime.strptime(result['last_updated'], "%Y-%m-%d %H:%M:%S")
+            utc_tz = pytz.utc
+            local_tz = timezone(TIMEZONE)
+            # Convert from UTC to local timezone
+            local_dt = utc_tz.localize(utc_dt).astimezone(local_tz)
+            # Format the datetime object
+            suffix = ["th", "st", "nd", "rd"][(local_dt.day % 10) - 1 if local_dt.day % 10 < 4 and not 11 <= local_dt.day <= 13 else 0]
+            formatted_datetime = local_dt.strftime(f"%B {local_dt.day}{suffix}, %Y at %I:%M%p")
+            return formatted_datetime
+        else:
+            return "No recent updates"
 
 def get_image_files():
     """List all image files in the specified directory."""
@@ -160,6 +175,7 @@ def index():
     # Fetch event times and image files
     last_event_times = get_last_event_times()
     image_files = get_image_files()
+    last_updated = fetch_and_format_last_updated()
     
     # Fetch events for the last 3 days
     events_last_3_days = get_events_last_3_days()
@@ -181,7 +197,7 @@ def index():
                            last_event_times=last_event_times,
                            today_counts=get_today_counts(),
                            average_counts_per_day=get_average_counts_per_day(),
-                           last_updated=get_formatted_last_updated(),
+                           last_updated=last_updated,
                            image_files=image_files,
                            events_last_3_days=events_last_3_days,
                            harper_data_json=harper_data_json, 
