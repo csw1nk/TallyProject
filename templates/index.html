@@ -193,12 +193,12 @@
     </div>
 
     <h2>Add Note or Reminder</h2>
-<form action="/add_note" method="POST">
-  <label for="noteText">Note:</label><br>
-  <textarea id="noteText" name="noteText" rows="4" cols="50"></textarea><br>
-  <input type="submit" value="Submit">
-</form>
-<a href="/notes">View Notes</a>
+    <form id="noteForm">
+        <label for="noteText">Note:</label><br>
+        <textarea id="noteText" name="noteText" rows="4" cols="50"></textarea><br>
+        <input type="button" value="Submit" onclick="submitNote()">
+      </form>
+      <a href="/notes">View Notes</a>
 
     <h2>Harper's Activity</h2>
 <canvas id="harperChart"></canvas>
@@ -345,7 +345,26 @@ const sophieChart = new Chart(sophieCtx, {
     }
 });
 </script>
-
+<script>
+    function submitNote() {
+        var noteText = document.getElementById('noteText').value;
+        fetch('/add_note', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'noteText=' + encodeURIComponent(noteText)
+        })
+        .then(response => response.text())
+        .then(data => {
+            alert(data); // Show success message
+            document.getElementById('noteText').value = ''; // Clear the form
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+    </script>
 </body>
 </html>
 

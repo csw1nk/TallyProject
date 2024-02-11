@@ -1,4 +1,5 @@
 from flask import Flask, render_template, jsonify
+from flask import request
 import sqlite3
 from datetime import datetime, timedelta
 import pytz
@@ -136,6 +137,15 @@ def get_activities_last_4_days_for_twin(twin_name):
     
     return {'dates': dates, 'data': data}
 
+@app.route('/add_note', methods=['POST'])
+def add_note():
+    note_text = request.form['noteText']
+    # Optionally, capture other form data like date or specific IDs related to the note
+    with get_db_connection() as conn:
+        conn.execute('INSERT INTO notes (text) VALUES (?)', (note_text,))
+        conn.commit()
+    return 'Note added successfully!'  # Or redirect to another page with redirect(url_for('index'))
+
 @app.route('/')
 def index():
     # Fetch the most recent keypress information
@@ -156,8 +166,12 @@ def index():
     # Convert the twin data to JSON for the JavaScript charts
     harper_data_json = json.dumps(harper_data)
     sophie_data_json = json.dumps(sophie_data)
+
+    with get_db_connection() as conn:
+        notes = conn.execute('SELECT text, created_at FROM notes ORDER BY created_at DESC').fetchall()
     
-    return render_template('index.html', 
+    return render_template('index.html',
+                           notes=notes, 
                            key_counts=get_key_counts(),
                            last_event_times=last_event_times,
                            today_counts=get_today_counts(),
@@ -167,6 +181,12 @@ def index():
                            events_last_3_days=events_last_3_days,
                            harper_data_json=harper_data_json, 
                            sophie_data_json=sophie_data_json)
+
+@app.route('/notes')
+def notes_page():
+    with get_db_connection() as conn:
+        notes = conn.execute('SELECT text, created_at FROM notes ORDER BY created_at DESC').fetchall()
+    return render_template('notes.html', notes=notes)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
