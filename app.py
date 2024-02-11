@@ -1,15 +1,18 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 import sqlite3
 from datetime import datetime, timedelta
 import pytz
 import os
 from pytz import timezone
 import json
+import logging
 
 app = Flask(__name__)
 DATABASE = 'tally.db'
 TIMEZONE = 'America/New_York'
 IMAGE_DIR = os.path.join('static', 'assets', 'images')  # Adjust based on your structure
+
+logging.basicConfig(level=logging.DEBUG)
 
 def get_db_connection():
     """Create a database connection with context management."""
@@ -108,65 +111,62 @@ def get_events_last_3_days():
     conn.close()
     return events
 
-def get_activity_counts_last_7_days():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    seven_days_ago = datetime.now(pytz.timezone(TIMEZONE)) - timedelta(days=6)  # Include today, so go back 6 days
-    data = {
-        'dates': [],
-        'feedings': [],
-        'pees': [],
-        'poos': [],
-    }
-    for i in range(7):
-        date = seven_days_ago + timedelta(days=i)
-        date_str = date.strftime('%Y-%m-%d')
-        data['dates'].append(date_str)
-        for activity in ['Feeding Harper', 'Feeding Sophie', 'Pee Harper', 'Poo Harper', 'Pee Sophie', 'Poo Sophie']:
-            cur.execute("""
-                SELECT COUNT(*) FROM keypresses
-                WHERE DATE(timestamp) = ? AND key_label = ?
-            """, (date_str, activity))
-            count = cur.fetchone()[0]
-            if 'Feeding' in activity:
-                data['feedings'].append(count)
-            elif 'Pee' in activity:
-                data['pees'].append(count)
-            elif 'Poo' in activity:
-                data['poos'].append(count)
-            print(f"For {activity} on {date_str}, count: {count}")  # Debugging print statement
-    conn.close()
-    return data
-
-@app.route('/activity_data')
-def activity_data():
-    # Here you would get your data from the database
-    activity_counts = get_activity_counts_last_7_days()
-
-    # Then return it as JSON
-    return jsonify(activity_counts)
+def get_activities_last_4_days_for_twin(twin_name):
+    """
+    Fetch activity counts for the specified twin for the last 4 days.
+    Activities include feeding, pees, and poos.
+    """
+    # Assuming `twin_name` could be part of the `key_label` like 'Feeding Harper'
+    end_date = datetime.now(pytz.timezone(TIMEZONE))
+    start_date = end_date - timedelta(days=3)  # Last 4 days including today
+    activities = ['Feeding', 'Pee', 'Poo']
+    data = {activity: [] for activity in activities}
+    dates = [(start_date + timedelta(days=d)).strftime('%Y-%m-%d') for d in range(4)]
+    
+    with get_db_connection() as conn:
+        for activity in activities:
+            for date in dates:
+                cur = conn.execute(f"""
+                    SELECT COUNT(*) as count
+                    FROM keypresses
+                    WHERE key_label = ? AND DATE(timestamp) = ?
+                """, (f'{activity} {twin_name}', date))
+                count = cur.fetchone()[0]
+                data[activity].append(count)
+    
+    return {'dates': dates, 'data': data}
 
 @app.route('/')
 def index():
+    # Fetch the most recent keypress information
     most_recent_keypress = get_most_recent_keypress()
     simplified_last_update = format_datetime(most_recent_keypress) if most_recent_keypress else "No recent updates"
-    last_event_times = get_last_event_times()  # This now contains both 'Feeding' and 'Diapers' categories
-    image_files = get_image_files()  # Get list of image files
-    events_last_3_days = get_events_last_3_days()  # Fetch events for the last 3 days
-    activity_counts_last_7_days = get_activity_counts_last_7_days()
-    activity_data = get_activity_counts_last_7_days()
-    activity_data_json = json.dumps(activity_data)
-
+    
+    # Fetch event times and image files
+    last_event_times = get_last_event_times()
+    image_files = get_image_files()
+    
+    # Fetch events for the last 3 days
+    events_last_3_days = get_events_last_3_days()
+    
+    # Fetch activity data for Harper and Sophie
+    harper_data = get_activities_last_4_days_for_twin('Harper')
+    sophie_data = get_activities_last_4_days_for_twin('Sophie')
+    
+    # Convert the twin data to JSON for the JavaScript charts
+    harper_data_json = json.dumps(harper_data)
+    sophie_data_json = json.dumps(sophie_data)
+    
     return render_template('index.html', 
-                           key_counts=get_key_counts(), 
-                           last_event_times=last_event_times,  # Pass the structured dict as is
-                           today_counts=get_today_counts(), 
+                           key_counts=get_key_counts(),
+                           last_event_times=last_event_times,
+                           today_counts=get_today_counts(),
                            average_counts_per_day=get_average_counts_per_day(),
                            last_updated=simplified_last_update,
                            image_files=image_files,
                            events_last_3_days=events_last_3_days,
-                           activity_counts_last_7_days=activity_counts_last_7_days,
-                           activity_data_json=activity_data_json)
+                           harper_data_json=harper_data_json, 
+                           sophie_data_json=sophie_data_json)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

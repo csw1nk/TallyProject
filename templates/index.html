@@ -191,6 +191,12 @@
             </table>
         </div>
     </div>
+
+    <h2>Harper's Activity</h2>
+<canvas id="harperChart"></canvas>
+
+<h2>Sophie's Activity</h2>
+<canvas id="sophieChart"></canvas>
     
     <h2>Events in the Last 3 Days</h2>
 <div style="display: flex; flex-wrap: wrap; justify-content: space-around;">
@@ -215,43 +221,6 @@
         </div>
     {% endfor %}
 </div>
-  <!-- Chart Canvas -->
-  <canvas id="activityChart"></canvas>
-  <script>
-    // Assuming you have passed the data as a JSON string
-    var activityData = JSON.parse('{{ activity_data_json | safe }}');
-
-    const ctx = document.getElementById('activityChart').getContext('2d');
-    const activityChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: activityData.dates,
-            datasets: [{
-                label: 'Feedings',
-                data: activityData.feedings,
-                borderColor: 'red',
-                fill: false
-            }, {
-                label: 'Pees',
-                data: activityData.pees,
-                borderColor: 'blue',
-                fill: false
-            }, {
-                label: 'Poos',
-                data: activityData.poos,
-                borderColor: 'green',
-                fill: false
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-</script>
 
     <h2>Today's Counts</h2>
     <table>
@@ -294,6 +263,80 @@
         </tr>
         {% endfor %}
     </table>
+
+    <script>
+        // Add this script at the bottom, before closing </body> tag
+        var harperData = JSON.parse('{{ harper_data_json | safe }}');
+        var sophieData = JSON.parse('{{ sophie_data_json | safe }}');
+        
+        const harperCtx = document.getElementById('harperChart').getContext('2d');
+        const sophieCtx = document.getElementById('sophieChart').getContext('2d');
+
+        const harperChart = new Chart(harperCtx, {
+    type: 'bar', // 'line', 'bar', etc., depending on the desired chart type
+    data: {
+        labels: harperData.dates, // An array of date strings
+        datasets: [{
+            label: 'Feedings',
+            data: harperData.data.Feeding, // Array of feeding counts
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1
+        }, {
+            label: 'Pees',
+            data: harperData.data.Pee, // Array of pee counts
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }, {
+            label: 'Poos',
+            data: harperData.data.Poo, // Array of poo counts
+            backgroundColor: 'rgba(255, 206, 86, 0.2)',
+            borderColor: 'rgba(255, 206, 86, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+const sophieChart = new Chart(sophieData, {
+    type: 'bar', // 'line', 'bar', etc., depending on the desired chart type
+    data: {
+        labels: sophieData.dates, // An array of date strings
+        datasets: [{
+            label: 'Feedings',
+            data: sophieData.data.Feeding, // Array of feeding counts
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1
+        }, {
+            label: 'Pees',
+            data: sophieData.data.Pee, // Array of pee counts
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }, {
+            label: 'Poos',
+            data: sophieData.data.Poo, // Array of poo counts
+            backgroundColor: 'rgba(255, 206, 86, 0.2)',
+            borderColor: 'rgba(255, 206, 86, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
 
 </body>
 </html>
