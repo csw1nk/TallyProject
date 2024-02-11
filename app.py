@@ -86,25 +86,16 @@ def get_last_record_timestamp():
         cur = conn.execute("SELECT timestamp FROM keypresses ORDER BY timestamp DESC LIMIT 1")
         last_record = cur.fetchone()
         if last_record:
-            raw_timestamp = last_record['timestamp']  # Capture raw timestamp
-            logging.debug(f"Raw timestamp retrieved: {raw_timestamp}")  # Log raw timestamp for review
-            
-            # Convert the string timestamp to a datetime object
-            timestamp_dt = datetime.strptime(raw_timestamp, '%Y-%m-%d %H:%M:%S')
-            
-            # Convert the datetime object to the desired timezone (if necessary)
-            tz = pytz.timezone(TIMEZONE)
-            timestamp_dt = timestamp_dt.replace(tzinfo=pytz.utc).astimezone(tz)
-            
-            # Format the datetime object back to a string if needed
-            formatted_datetime = timestamp_dt.strftime('%Y-%m-%d %H:%M:%S %Z')
-            
+            raw_timestamp = last_record['timestamp']  # Debugging: Capture raw timestamp
+            logging.debug(f"Raw timestamp retrieved: {raw_timestamp}")  # Debugging: Log raw timestamp
+            formatted_datetime = format_datetime(raw_timestamp, TIMEZONE)  # Ensure correct implementation
             return formatted_datetime
         else:
             return "No records found"
     except Exception as e:
-        logging.error(f"Error retrieving last record's timestamp: {e}")
-        return "Error retrieving data: {e}"
+        error_message = f"Error retrieving last record's timestamp: {str(e)}"
+        logging.error(error_message)
+        return error_message  # Now correctly includes the exception message
     finally:
         conn.close()
         
