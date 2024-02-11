@@ -192,6 +192,14 @@
         </div>
     </div>
 
+    <h2>Add Note or Reminder</h2>
+<form action="/add_note" method="POST">
+  <label for="noteText">Note:</label><br>
+  <textarea id="noteText" name="noteText" rows="4" cols="50"></textarea><br>
+  <input type="submit" value="Submit">
+</form>
+<a href="/notes">View Notes</a>
+
     <h2>Harper's Activity</h2>
 <canvas id="harperChart"></canvas>
 
