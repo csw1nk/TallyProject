@@ -80,22 +80,35 @@ def format_datetime(datetime_str, local_tz='America/New_York'):
         # Handle invalid datetime strings gracefully
         return f"Invalid datetime: {datetime_str}"
 
+def parse_and_format_datetime(datetime_str, timezone_str):
+    # Parse the datetime string into a datetime object
+    dt_obj = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+    
+    # Assuming you want to convert to a specific timezone
+    # Ensure your environment has the 'pytz' library and you know your target timezone
+    target_timezone = pytz.timezone(timezone_str)
+    localized_dt = dt_obj.replace(tzinfo=pytz.utc).astimezone(target_timezone)
+    
+    # Format the datetime object as needed, e.g., back to string
+    formatted_datetime = localized_dt.strftime("%Y-%m-%d %H:%M:%S %Z")
+    return formatted_datetime
+
 def get_last_record_timestamp():
     conn = get_db_connection()
     try:
-        cur = conn.execute("SELECT timestamp FROM keypresses ORDER BY timestamp DESC LIMIT 1")
+        # Query to get the latest timestamp
+        cur = conn.execute("SELECT MAX(timestamp) as latest_timestamp FROM keypresses")
         last_record = cur.fetchone()
-        if last_record:
-            raw_timestamp = last_record['timestamp']  # Debugging: Capture raw timestamp
-            logging.debug(f"Raw timestamp retrieved: {raw_timestamp}")  # Debugging: Log raw timestamp
-            formatted_datetime = format_datetime(raw_timestamp, TIMEZONE)  # Ensure correct implementation
+        if last_record and last_record['latest_timestamp']:
+            # Use the new parsing and formatting function
+            formatted_datetime = parse_and_format_datetime(last_record['latest_timestamp'], TIMEZONE)
             return formatted_datetime
         else:
             return "No records found"
     except Exception as e:
         error_message = f"Error retrieving last record's timestamp: {str(e)}"
         logging.error(error_message)
-        return error_message  # Now correctly includes the exception message
+        return error_message
     finally:
         conn.close()
         
