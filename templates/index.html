@@ -200,6 +200,35 @@
       </form>
       <a href="/notes">View Notes</a>
 
+      <h2>Today's Counts</h2>
+      <table>
+          <tr>
+              <th>Activity Type</th>
+              <th>Today's Count</th>
+          </tr>
+          {% for key, count in today_counts.items() %}
+          <tr>
+              <td>{{ key }}</td>
+              <td>{{ count }}</td>
+          </tr>
+          {% endfor %}
+      </table>
+    </div>
+    <div>
+      <h2>Average Counts Per Day</h2>
+      <table>
+          <tr>
+              <th>Activity Type</th>
+              <th>Average Count</th>
+          </tr>
+          {% for key, avg in average_counts_per_day.items() %}
+          <tr>
+              <td>{{ key }}</td>
+              <td>{{ avg }}</td>
+          </tr>
+          {% endfor %}
+      </table>
+      
     <h2>Harper's Activity</h2>
 <canvas id="harperChart"></canvas>
 
@@ -230,20 +259,6 @@
     {% endfor %}
 </div>
 
-    <h2>Today's Counts</h2>
-    <table>
-        <tr>
-            <th>Activity Type</th>
-            <th>Today's Count</th>
-        </tr>
-        {% for key, count in today_counts.items() %}
-        <tr>
-            <td>{{ key }}</td>
-            <td>{{ count }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-
     <h2>Total Counts</h2>
     <table>
         <tr>
@@ -254,20 +269,6 @@
         <tr>
             <td>{{ key }}</td>
             <td>{{ count }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-
-    <h2>Average Counts Per Day</h2>
-    <table>
-        <tr>
-            <th>Activity Type</th>
-            <th>Average Count</th>
-        </tr>
-        {% for key, avg in average_counts_per_day.items() %}
-        <tr>
-            <td>{{ key }}</td>
-            <td>{{ avg }}</td>
         </tr>
         {% endfor %}
     </table>
