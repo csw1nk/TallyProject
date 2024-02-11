@@ -66,12 +66,13 @@ def get_average_counts_per_day():
     return {row['key_label']: row['total_count'] / row['days'] for row in query_db("SELECT key_label, COUNT(*) as total_count, COUNT(DISTINCT DATE(timestamp)) as days FROM keypresses GROUP BY key_label") if row['days'] > 0}
 
 def format_datetime(datetime_str, local_tz='America/New_York'):
-    """Format datetime string to a more readable form."""
+    """Format datetime string to a more readable form, converting UTC to local timezone."""
     try:
+        utc_tz = pytz.utc
         local_timezone = timezone(local_tz)
-        # Directly parse the timestamp as America/New_York time
-        local_dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
-        local_dt = local_timezone.localize(local_dt)  # Make it timezone-aware
+        utc_dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+        utc_dt = utc_tz.localize(utc_dt)  # Localize as UTC
+        local_dt = utc_dt.astimezone(local_timezone)  # Convert to local timezone
         # Format with the appropriate suffix for the day
         suffix = ["th", "st", "nd", "rd"][(local_dt.day % 10) - 1 if local_dt.day % 10 < 4 and not 11 <= local_dt.day <= 13 else 0]
         formatted_datetime = local_dt.strftime(f"%B {local_dt.day}{suffix}, %Y at %I:%M%p")
@@ -81,17 +82,21 @@ def format_datetime(datetime_str, local_tz='America/New_York'):
         return f"Invalid datetime: {datetime_str}"
 
 def get_last_record_timestamp():
-    """Fetch the most recent update timestamp from the database and format it for display."""
-    query = "SELECT timestamp FROM keypresses ORDER BY timestamp DESC LIMIT 1"
-    with get_db_connection() as conn:
-        cur = conn.execute(query)
-        result = cur.fetchone()
-        if result and result['timestamp']:
-            # Use the updated format_datetime function
-            formatted_datetime = format_datetime(result['timestamp'])
+    conn = get_db_connection()
+    try:
+        cur = conn.execute("SELECT timestamp FROM keypresses ORDER BY timestamp DESC LIMIT 1")
+        last_record = cur.fetchone()
+        conn.close()
+        if last_record and last_record['timestamp']:
+            # Pass the timestamp to the formatting function
+            formatted_datetime = format_datetime(last_record['timestamp'], TIMEZONE)
             return formatted_datetime
         else:
-            return "No recent updates"
+            return "No records found"
+    except Exception as e:
+        conn.close()
+        logging.error(f"Error retrieving last record's timestamp: {e}")
+        return "Error retrieving data"
         
 def get_image_files():
     """List all image files in the specified directory."""
