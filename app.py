@@ -68,9 +68,6 @@ def get_average_counts_per_day():
 def format_datetime(datetime_str, local_tz='America/New_York'):
     """Format datetime string to a more readable form, converting UTC to local timezone."""
     try:
-        if datetime_str == "timestamp":
-            return "No recent updates"
-        
         utc_tz = pytz.utc
         local_timezone = timezone(local_tz)
         utc_dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
@@ -155,9 +152,7 @@ def add_note():
 
 @app.route('/')
 def index():
-    # Fetch the most recent keypress information
-    most_recent_keypress = get_most_recent_keypress()
-    simplified_last_update = format_datetime(most_recent_keypress) if most_recent_keypress else "No recent updates"
+    simplified_last_update = "Last Updated On: " + datetime.now().strftime("%A, %B %d, %Y at %I:%M:%S %p")
     
     # Fetch event times and image files
     last_event_times = get_last_event_times()
@@ -174,6 +169,9 @@ def index():
     harper_data_json = json.dumps(harper_data)
     sophie_data_json = json.dumps(sophie_data)
 
+    last_updated_time = query_db("SELECT MAX(timestamp) FROM keypresses", one=True)
+    last_updated = format_datetime(last_updated_time['MAX(timestamp)']) if last_updated_time and last_updated_time['MAX(timestamp)'] else "No recent updates"
+
     with get_db_connection() as conn:
         notes = conn.execute('SELECT text, created_at FROM notes ORDER BY created_at DESC').fetchall()
     
@@ -183,7 +181,7 @@ def index():
                            last_event_times=last_event_times,
                            today_counts=get_today_counts(),
                            average_counts_per_day=get_average_counts_per_day(),
-                           last_updated=simplified_last_update,
+                           last_updated=last_updated,
                            image_files=image_files,
                            events_last_3_days=events_last_3_days,
                            harper_data_json=harper_data_json, 
