@@ -81,6 +81,11 @@ def format_datetime(datetime_str, local_tz='America/New_York'):
         # Handle invalid datetime strings gracefully
         return f"Invalid datetime: {datetime_str}"
 
+def get_formatted_last_updated():
+    """Fetch and format the most recent update timestamp from the database."""
+    last_updated_time = query_db("SELECT MAX(timestamp) FROM keypresses", one=True)
+    return format_datetime(last_updated_time['MAX(timestamp)']) if last_updated_time and last_updated_time['MAX(timestamp)'] else "No recent updates"
+
 def get_image_files():
     """List all image files in the specified directory."""
     image_files = []
@@ -151,9 +156,7 @@ def add_note():
     return 'Note added successfully!'  # Or redirect to another page with redirect(url_for('index'))
 
 @app.route('/')
-def index():
-    simplified_last_update = "Last Updated On: " + datetime.now().strftime("%A, %B %d, %Y at %I:%M:%S %p")
-    
+def index():    
     # Fetch event times and image files
     last_event_times = get_last_event_times()
     image_files = get_image_files()
@@ -169,9 +172,6 @@ def index():
     harper_data_json = json.dumps(harper_data)
     sophie_data_json = json.dumps(sophie_data)
 
-    last_updated_time = query_db("SELECT MAX(timestamp) FROM keypresses", one=True)
-    last_updated = format_datetime(last_updated_time['MAX(timestamp)']) if last_updated_time and last_updated_time['MAX(timestamp)'] else "No recent updates"
-
     with get_db_connection() as conn:
         notes = conn.execute('SELECT text, created_at FROM notes ORDER BY created_at DESC').fetchall()
     
@@ -181,7 +181,7 @@ def index():
                            last_event_times=last_event_times,
                            today_counts=get_today_counts(),
                            average_counts_per_day=get_average_counts_per_day(),
-                           last_updated=last_updated,
+                           last_updated=get_formatted_last_updated(),
                            image_files=image_files,
                            events_last_3_days=events_last_3_days,
                            harper_data_json=harper_data_json, 
