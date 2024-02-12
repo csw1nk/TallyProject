@@ -85,7 +85,7 @@ def get_last_record_timestamp():
     query = "SELECT MAX(timestamp) as last_update FROM keypresses"
     result = query_db(query, one=True)
     return format_datetime(result['last_update']) if result and result['last_update'] else "No records found"
-        
+
 def get_image_files():
     """List all image files in the specified directory."""
     image_files = []
