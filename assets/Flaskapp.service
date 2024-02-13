@@ -1,0 +1,11 @@
+[Unit]
+Description=Flask App Service
+After=network.target
+
+[Service]
+User=corey
+WorkingDirectory=/home/corey/TallyProject
+ExecStart=/usr/bin/python3 /home/corey/TallyProject/app.py
+
+[Install]
+WantedBy=multi-user.target
