@@ -99,7 +99,7 @@ def get_image_files():
     full_path = os.path.join(IMAGE_DIR, hospital_images_dir)
     if os.path.exists(full_path):
         for filename in os.listdir(full_path):
-            if filename.endswith(('.png', '.jpg', '.jpeg', '.gif')):
+            if filename.endswith(('.png', '.jpg', '.jpeg', '.gif', '.svg')):
                 image_files.append(os.path.join(hospital_images_dir, filename))
     
     return image_files

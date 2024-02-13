@@ -125,16 +125,20 @@
 
 @keyframes splatterAnimation {
     0% {
-        transform: translate(-50%, -50%) scale(0) rotate(0deg); /* Start from nothing with no rotation */
-        opacity: 1;
+        transform: scale(0); /* Start from nothing */
+        opacity: 0; /* Start from fully transparent */
     }
-    50% {
-        transform: translate(-50%, -50%) scale(.7) rotate(90deg); /* Scale up and rotate */
-        opacity: 1;
+    30% {
+        transform: scale(5); /* Quickly scale up as if splattering on the screen */
+        opacity: .7; /* Fully visible */
+    }
+    60% {
+        transform: scale(1.5); /* Scale back to normal size */
+        opacity: 1; /* Still fully visible */
     }
     100% {
-        transform: translate(-50%, -50%) scale(.8) rotate(180deg); /* Slightly scale down and rotate */
-        opacity: 0;
+        transform: scale(1); /* Remain at normal size */
+        opacity: 0; /* Fully fade out */
     }
 }
 
@@ -143,21 +147,21 @@
         transform: rotate(0deg); /* Start with no rotation */
     }
     100% {
-        transform: rotate(360deg); /* Rotate 360 degrees */
+        transform: rotate(45deg); /* Rotate 360 degrees */
     }
 }
 
 #splatter {
     position: absolute;
-    top: 50%;
-    left: 50%;
+    top: -20vh;
+    left: 10%;
     transform: translate(-50%, -50%) rotate(0deg); /* Start with no rotation */
     opacity: 0;
     width: auto;
     max-width: 100%;
     z-index: 2;
-    animation: splatterAnimation 2s ease forwards, rotateAnimation 2s ease forwards; /* Apply both animations */
-}
+    animation: splatterAnimation 3s ease forwards 1s; /* ,rotateAnimation 2s ease forwards 1s; Add a 1-second delay to both animations */
+}translate(-50%, -50%) 
     </style>
 </head>
 <body>
@@ -298,11 +302,15 @@
         </div>
     {% endfor %}
 </div>
-<div id="diaperCountSection" style="text-align:center; margin-top:20px; position: relative;">
+<div id="diaperCountSection" style="text-align:center; margin-top:20px; margin-bottom:20px; position: relative;">
     <h2>Diaper Dashboard</h2>
     <p>Keeping track of the twins' adventures in diaper land!</p>
-    <img id="splatter" src="{{ url_for('static', filename='assets/images/SplatterImage.png') }}" />
+    <img id="splatter" src="{{ url_for('static', filename='assets/images/SplatterImage.svg') }}" />
     <div id="diaperCount" style="font-size:48px; font-weight:bold; color:#9ACD32; position: relative;">0</div>
+    <h2>More to come...💩</h2>
+</div>
+<div style="height:300px;"> <!-- This div adds extra space below the diaper count section -->
+    <!-- This space intentionally left blank to create a margin -->
 </div>
     <script>
         // Add this script at the bottom, before closing </body> tag
@@ -398,21 +406,26 @@ const sophieChart = new Chart(sophieCtx, {
     }
     </script>
    <script>
-    document.addEventListener("DOMContentLoaded", function() {
+	document.addEventListener("DOMContentLoaded", function() {
     let observer = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 let splatter = document.getElementById('splatter');
-                splatter.classList.add('animate'); // Start the splatter animation
-                // Set a timeout to fade the splatter image and show the number
+                // Delay the start of the splatter animation
+                setTimeout(() => {
+                    splatter.classList.add('animate'); // Start the splatter animation after a delay
+                }, 1000); // Delay the animation by 1000 milliseconds (1 second)
+
+                // Another timeout to fade the splatter image and show the number
                 setTimeout(() => {
                     splatter.style.opacity = 0; // Make the splatter invisible
                     animateValue("diaperCount", 0, {{ diaper_count }}, 2000); // Start the count animation
-                }, 2000); // This timeout should be the same as the duration of the splatterAnimation
+                }, 3000); // This timeout should be the sum of the animation delay and duration
+
                 observer.unobserve(entry.target);
             }
         });
-    }, { threshold: 0.5 });
+    }, { threshold: 0.5, rootMargin: "0px" });
 
     observer.observe(document.getElementById('diaperCountSection'));
 });
