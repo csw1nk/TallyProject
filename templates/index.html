@@ -262,6 +262,30 @@
         </div>
     {% endfor %}
 </div>
+<div id="diaperCountSection" style="text-align:center; margin-top:20px;">
+    <h2>Diaper Dashboard</h2>
+    <p>Keeping track of the twins' adventures in diaper land!</p>
+    <div id="diaperCount" style="font-size:48px; font-weight:bold; color:#4CAF50;"></div>
+    <script>
+        function animateValue(id, start, end, duration) {
+            let range = end - start;
+            let current = start;
+            let increment = end > start? 1 : -1;
+            let stepTime = Math.abs(Math.floor(duration / range));
+            let obj = document.getElementById(id);
+            let timer = setInterval(function() {
+                current += increment;
+                obj.innerHTML = current;
+                if (current == end) {
+                    clearInterval(timer);
+                }
+            }, stepTime);
+        }
+        
+        // Start the animation with the diaper count from Flask
+        animateValue("diaperCount", 0, {{ diaper_count }}, 1500); // 1500 ms = 1.5 seconds
+    </script>
+</div>
     <script>
         // Add this script at the bottom, before closing </body> tag
         var harperData = JSON.parse('{{ harper_data_json | safe }}');
