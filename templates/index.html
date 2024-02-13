@@ -123,20 +123,38 @@
             transform: scale(1.1); /* Slight zoom on hover */
         }
 
-@keyframes splatterFadeOut {
+        @keyframes splatterAnimation {
     0% {
-        transform: scale(0.1);
+        transform: scale(0);
+        opacity: 0.5; /* Start with a semi-transparent image */
+    }
+    80% {
+        transform: scale(1.2); /* Overshoot the final size for a 'splatter' effect */
         opacity: 1;
     }
     100% {
-        transform: scale(1);
-        opacity: 0;
+        transform: scale(1); /* Settle down to the final size */
+        opacity: 1;
     }
 }
 
 #splatter {
-    animation: splatterFadeOut 0.5s forwards; /* This will need to be triggered by JavaScript */
-}        
+    /* Initial styles, make sure it's centered on the screen */
+    width: 100px; /* Initial width, can be adjusted */
+    height: auto; /* Maintain aspect ratio */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0); /* Center the image */
+    opacity: 0;
+    transition: transform 0.5s, opacity 0.5s;
+    z-index: 2; /* Make sure it's above other elements */
+}
+
+/* Now use the defined animation */
+#splatter.animate {
+    animation: splatterAnimation 1s forwards; /* Adjust time as needed */
+}    
     </style>
 </head>
 <body>
@@ -379,22 +397,24 @@ const sophieChart = new Chart(sophieCtx, {
     </script>
    <script>
     document.addEventListener("DOMContentLoaded", function() {
-        let observer = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    // Trigger the splatter animation
-                    document.getElementById('splatter').style.animation = 'splatterFadeOut 0.5s forwards';
-                    // Trigger the number update and animation with a delay to wait for the splatter animation
-                    setTimeout(() => {
-                        animateValue("diaperCount", 0, {{ diaper_count }}, 1500); // Use your existing function
-                    }, 500); // This timeout should match the duration of the splatterFadeOut animation
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.5 });
+    let observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                let splatter = document.getElementById('splatter');
+                splatter.classList.add('animate'); // Add the class to start the animation
+                
+                // Trigger the number update and animation with a delay to wait for the splatter animation
+                setTimeout(() => {
+                    animateValue("diaperCount", 0, {{ diaper_count }}, 1500); // Use your existing function
+                }, 1000); // This timeout should match the duration of the splatterAnimation
+                
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
 
-        observer.observe(document.getElementById('diaperCountSection'));
-    });
+    observer.observe(document.getElementById('diaperCountSection'));
+});
 </script>
 </body>
 </html>
