@@ -122,6 +122,21 @@
         .galleryImg:hover {
             transform: scale(1.1); /* Slight zoom on hover */
         }
+
+@keyframes splatterFadeOut {
+    0% {
+        transform: scale(0.1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0;
+    }
+}
+
+#splatter {
+    animation: splatterFadeOut 0.5s forwards; /* This will need to be triggered by JavaScript */
+}        
     </style>
 </head>
 <body>
@@ -265,26 +280,9 @@
 <div id="diaperCountSection" style="text-align:center; margin-top:20px;">
     <h2>Diaper Dashboard</h2>
     <p>Keeping track of the twins' adventures in diaper land!</p>
-    <div id="diaperCount" style="font-size:48px; font-weight:bold; color:#4CAF50;"></div>
-    <script>
-        function animateValue(id, start, end, duration) {
-            let range = end - start;
-            let current = start;
-            let increment = end > start? 1 : -1;
-            let stepTime = Math.abs(Math.floor(duration / range));
-            let obj = document.getElementById(id);
-            let timer = setInterval(function() {
-                current += increment;
-                obj.innerHTML = current;
-                if (current == end) {
-                    clearInterval(timer);
-                }
-            }, stepTime);
-        }
-        
-        // Start the animation with the diaper count from Flask
-        animateValue("diaperCount", 0, {{ diaper_count }}, 1500); // 1500 ms = 1.5 seconds
-    </script>
+    <img id="splatter" src="static/assets/images/SplatterImage.png" style="width: 100%; max-width: 250px; opacity: 0; position: absolute; transform: scale(0.1);" />
+    <div id="diaperCount" style="font-size:48px; font-weight:bold; color:#9ACD32; opacity: 0; position: relative;">0</div> <!-- Initial opacity set to 0 -->
+</div>
 </div>
     <script>
         // Add this script at the bottom, before closing </body> tag
@@ -379,6 +377,25 @@ const sophieChart = new Chart(sophieCtx, {
         });
     }
     </script>
+   <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Trigger the splatter animation
+                    document.getElementById('splatter').style.animation = 'splatterFadeOut 0.5s forwards';
+                    // Trigger the number update and animation with a delay to wait for the splatter animation
+                    setTimeout(() => {
+                        animateValue("diaperCount", 0, {{ diaper_count }}, 1500); // Use your existing function
+                    }, 500); // This timeout should match the duration of the splatterFadeOut animation
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        observer.observe(document.getElementById('diaperCountSection'));
+    });
+</script>
 </body>
 </html>
 
