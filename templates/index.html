@@ -280,7 +280,7 @@
 <div id="diaperCountSection" style="text-align:center; margin-top:20px;">
     <h2>Diaper Dashboard</h2>
     <p>Keeping track of the twins' adventures in diaper land!</p>
-    <img id="splatter" src="static/assets/images/SplatterImage.png" style="width: 100%; max-width: 250px; opacity: 0; position: absolute; transform: scale(0.1);" />
+    <img id="splatter" src="{{ url_for('static', filename='assets/images/SplatterImage.png') }}" style="width: 100%; max-width: 250px; opacity: 0; position: absolute; transform: scale(0.1);" />
     <div id="diaperCount" style="font-size:48px; font-weight:bold; color:#9ACD32; opacity: 0; position: relative;">0</div> <!-- Initial opacity set to 0 -->
 </div>
 </div>
