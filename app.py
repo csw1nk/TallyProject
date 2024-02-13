@@ -92,17 +92,15 @@ def get_last_record_timestamp():
     return format_datetime(result['timestamp']) if result and result['timestamp'] else "No records found"
 
 def get_image_files():
-    """List all image files in the specified directories."""
+    """List all image files in the 'hospital_images' directory."""
     image_files = []
-    directories = ['assets/hospital_images', 'assets/images']
+    hospital_images_dir = 'assets/hospital_images'  # Assuming 'assets' is inside the 'static' directory
     
-    for directory in directories:
-        full_path = os.path.join(IMAGE_DIR, directory)
-        if os.path.exists(full_path):
-            for filename in os.listdir(full_path):
-                if filename.endswith(('.png', '.jpg', '.jpeg', '.gif')):
-                    # Note: Adjust the path based on how you want to reference it in the template
-                    image_files.append(os.path.join(directory, filename))
+    full_path = os.path.join(IMAGE_DIR, hospital_images_dir)
+    if os.path.exists(full_path):
+        for filename in os.listdir(full_path):
+            if filename.endswith(('.png', '.jpg', '.jpeg', '.gif', '.svg')):
+                image_files.append(os.path.join(hospital_images_dir, filename))
     
     return image_files
 
