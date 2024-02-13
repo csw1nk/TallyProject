@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 def get_db_connection():
     """Create a database connection with context management."""
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect(DATABASE, detect_types=sqlite3.PARSE_DECLTYPES)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -61,20 +61,31 @@ def get_today_counts():
     return {row['key_label']: row['COUNT(*)'] for row in query_db("SELECT key_label, COUNT(*) FROM keypresses WHERE DATE(timestamp) = ? GROUP BY key_label", [today])}
 
 def get_average_counts_per_day():
-    """Calculate the average count per day for each key press."""
-    return {row['key_label']: row['total_count'] / row['days'] for row in query_db("SELECT key_label, COUNT(*) as total_count, COUNT(DISTINCT DATE(timestamp)) as days FROM keypresses GROUP BY key_label") if row['days'] > 0}
+    """Calculate the average count per day for each key press, rounded to two decimal places."""
+    return {row['key_label']: round(row['total_count'] / row['days'], 2) for row in query_db("SELECT key_label, COUNT(*) as total_count, COUNT(DISTINCT DATE(timestamp)) as days FROM keypresses GROUP BY key_label") if row['days'] > 0}
 
 def format_datetime(datetime_str, local_tz='America/New_York'):
     """Format datetime string to a more readable form, converting UTC to local timezone."""
     try:
+        # Ensure the datetime string is valid before attempting to parse and convert it
+        if datetime_str is None or datetime_str.lower() == 'timestamp':
+            return "No valid datetime provided"
+
         utc_tz = pytz.utc
         local_timezone = timezone(local_tz)
+        # Parse the datetime string
         utc_dt = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
         utc_dt = utc_tz.localize(utc_dt)  # Localize as UTC
         local_dt = utc_dt.astimezone(local_timezone)  # Convert to local timezone
+
         # Format with the appropriate suffix for the day
-        suffix = ["th", "st", "nd", "rd"][(local_dt.day % 10) - 1 if local_dt.day % 10 < 4 and not 11 <= local_dt.day <= 13 else 0]
-        formatted_datetime = local_dt.strftime(f"%B {local_dt.day}{suffix}, %Y at %I:%M%p")
+        day = local_dt.day
+        if 4 <= day <= 20 or 24 <= day <= 30:
+            suffix = "th"
+        else:
+            suffix = ["st", "nd", "rd"][day % 10 - 1]
+
+        formatted_datetime = local_dt.strftime(f"%B {day}{suffix}, %Y at %I:%M %p")
         return formatted_datetime
     except ValueError as e:
         # Handle invalid datetime strings gracefully
@@ -82,9 +93,9 @@ def format_datetime(datetime_str, local_tz='America/New_York'):
 
 def get_last_record_timestamp():
     """Get the timestamp of the last record from the keypresses table."""
-    query = "SELECT MAX(timestamp) as last_update FROM keypresses"
+    query = "SELECT timestamp FROM keypresses ORDER BY id DESC LIMIT 1"
     result = query_db(query, one=True)
-    return format_datetime(result['last_update']) if result and result['last_update'] else "No records found"
+    return format_datetime(result['timestamp']) if result and result['timestamp'] else "No records found"
 
 def get_image_files():
     """List all image files in the specified directory."""
@@ -132,7 +143,7 @@ def get_activities_last_X_days_for_twin(twin_name):
     activities = ['Feeding', 'Pee', 'Poo']
     data = {activity: [] for activity in activities}
     dates = [(start_date + timedelta(days=d)).strftime('%Y-%m-%d') for d in range(7)]
-    
+
     with get_db_connection() as conn:
         for activity in activities:
             for date in dates:
@@ -143,7 +154,6 @@ def get_activities_last_X_days_for_twin(twin_name):
                 """, (f'{activity} {twin_name}', date))
                 count = cur.fetchone()[0]
                 data[activity].append(count)
-    
     return {'dates': dates, 'data': data}
 
 @app.route('/add_note', methods=['POST'])
@@ -156,37 +166,34 @@ def add_note():
     return 'Note added successfully!'  # Or redirect to another page with redirect(url_for('index'))
 
 @app.route('/')
-def index():    
+def index():
     # Fetch event times and image files
     last_event_times = get_last_event_times()
     image_files = get_image_files()
     last_updated = get_last_record_timestamp()
-    
     # Fetch events for the last 3 days
-    events_last_3_days = get_events_last_3_days()
-    
+    events_last_3_days = get_events_last_3_days() 
     # Fetch activity data for Harper and Sophie
     harper_data = get_activities_last_X_days_for_twin('Harper')
     sophie_data = get_activities_last_X_days_for_twin('Sophie')
-    
     # Convert the twin data to JSON for the JavaScript charts
     harper_data_json = json.dumps(harper_data)
     sophie_data_json = json.dumps(sophie_data)
 
     with get_db_connection() as conn:
         notes = conn.execute('SELECT text, created_at FROM notes ORDER BY created_at DESC').fetchall()
-    
+
     return render_template('index.html',
                            notes=notes, 
                            key_counts=get_key_counts(),
                            last_event_times=last_event_times,
                            today_counts=get_today_counts(),
                            average_counts_per_day=get_average_counts_per_day(),
-                           last_updated=last_updated,
                            image_files=image_files,
                            events_last_3_days=events_last_3_days,
                            harper_data_json=harper_data_json, 
-                           sophie_data_json=sophie_data_json)
+                           sophie_data_json=sophie_data_json,
+			   last_updated=last_updated)
 
 @app.route('/notes')
 def notes_page():
