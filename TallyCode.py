@@ -17,25 +17,6 @@ key_label_mapping = {
 key_counts = {label: 0 for label in key_label_mapping.values()}
 last_key_states = {key: False for key in key_label_mapping.keys()}
 
-# CSV backup file name
-CSV_BACKUP = 'tally_backup.csv'
-
-def update_csv_backup(key_label, index):
-    """Append the latest key press event to the CSV backup file."""
-    with open(CSV_BACKUP, 'a', newline='') as csvfile:
-        fieldnames = ['id', 'timestamp', 'key_label']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        
-        # Write header if the file is newly created
-        if csvfile.tell() == 0:
-            writer.writeheader()
-        
-        # Get current UTC time
-        utc_now = datetime.now(timezone.utc)
-        
-        # Write the row with index, timestamp, and key_label
-        writer.writerow({'id': index, 'timestamp': utc_now.strftime('%Y-%m-%d %H:%M:%S'), 'key_label': key_label})
-
 def update_db(key_label):
     """Insert the latest key press event into the SQLite database and update the CSV backup."""
     try:
@@ -48,11 +29,6 @@ def update_db(key_label):
         print(f"SQLite error: {e}")
     finally:
         conn.close()
-    
-    # Update CSV backup after successful database insert
-    update_csv_backup(key_label)
-    print(f"CSV Backup Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - Key Label: {key_label}")
-
 
 def poll_keyboard_events():
     """Poll for keyboard events and update the database and CSV backup accordingly."""
