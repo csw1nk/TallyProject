@@ -125,30 +125,28 @@
 
 @keyframes splatterAnimation {
     0% {
-        transform: scale(0);
-        opacity: 0.5; /* Start with a semi-transparent image */
+        transform: scale(0); /* Start from nothing */
+        opacity: 1; /* Start fully visible */
     }
-    80% {
-        transform: scale(1.2); /* Overshoot the final size for a 'splatter' effect */
+    50% {
+        transform: scale(2); /* Scale up for 'explode' effect */
         opacity: 1;
     }
     100% {
-        transform: scale(1); /* Settle down to the final size */
-        opacity: 1;
+        transform: scale(2); /* Stay at the scaled up size */
+        opacity: 0; /* Fade out */
     }
 }
 
 #splatter {
-    /* Initial styles, make sure it's centered on the screen */
-    width: 100px; /* Initial width, can be adjusted */
-    height: auto; /* Maintain aspect ratio */
-    position: fixed;
+    position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) scale(0); /* Center the image */
-    opacity: 0;
-    transition: transform 0.5s, opacity 0.5s;
-    z-index: 2; /* Make sure it's above other elements */
+    transform: translate(-50%, -50%) scale(0); /* Center the image and start from scale 0 */
+    opacity: 0; /* Start invisible */
+    width: 100%; /* Cover the entire section width */
+    max-width: none; /* Override any max-width */
+    z-index: 2; /* Above the text */
 }
 
 /* Now use the defined animation */
@@ -298,7 +296,7 @@
 <div id="diaperCountSection" style="text-align:center; margin-top:20px; position: relative;">
     <h2>Diaper Dashboard</h2>
     <p>Keeping track of the twins' adventures in diaper land!</p>
-    <img id="splatter" src="{{ url_for('static', filename='assets/images/SplatterImage.png') }}" style="width: 100%; max-width: 250px; opacity: 0; position: absolute; transform: scale(0.1);" />
+    <img id="splatter" src="{{ url_for('static', filename='assets/images/SplatterImage.png') }}" style="opacity: 0;" />
     <div id="diaperCount" style="font-size:48px; font-weight:bold; color:#9ACD32; opacity: 0; position: relative;">0</div> <!-- Initial opacity set to 0 -->
 </div>
 </div>
@@ -401,13 +399,12 @@ const sophieChart = new Chart(sophieCtx, {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 let splatter = document.getElementById('splatter');
-                splatter.classList.add('animate'); // Add the class to start the animation
-                
-                // Trigger the number update and animation with a delay to wait for the splatter animation
+                splatter.classList.add('animate'); // Start the splatter animation
+                // Set a timeout to fade the splatter image and show the number
                 setTimeout(() => {
-                    animateValue("diaperCount", 0, {{ diaper_count }}, 1500); // Use your existing function
-                }, 1000); // This timeout should match the duration of the splatterAnimation
-                
+                    splatter.style.opacity = 0; // Make the splatter invisible
+                    animateValue("diaperCount", 0, {{ diaper_count }}, 1500); // Start the count animation
+                }, 1500); // This timeout should be the same as the duration of the splatterAnimation
                 observer.unobserve(entry.target);
             }
         });
