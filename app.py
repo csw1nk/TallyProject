@@ -11,7 +11,7 @@ import logging
 app = Flask(__name__)
 DATABASE = 'tally.db'
 TIMEZONE = 'America/New_York'
-IMAGE_DIR = os.path.join('static', 'assets', 'hospital_images')  # Adjust based on your structure
+IMAGE_DIR = os.path.join(app.root_path, 'static')
 
 logging.basicConfig(level=logging.DEBUG)
 
