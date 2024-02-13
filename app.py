@@ -32,12 +32,6 @@ def get_key_counts():
     """Get counts of each key press from the database."""
     return {row['key_label']: row['count'] for row in query_db("SELECT key_label, COUNT(*) as count FROM keypresses GROUP BY key_label")}
 
-def get_most_recent_keypress():
-    """Get the most recent key press timestamp."""
-    query = "SELECT MAX(timestamp) FROM keypresses"
-    result = query_db(query, one=True)
-    return result['MAX(timestamp)'] if result and result['MAX(timestamp)'] else None
-
 def get_last_event_times():
     """Get the last event time for each key press, split by category."""
     categories = {

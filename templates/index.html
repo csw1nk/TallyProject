@@ -262,21 +262,6 @@
         </div>
     {% endfor %}
 </div>
-
-    <h2>Total Counts</h2>
-    <table>
-        <tr>
-            <th>Activity Type</th>
-            <th>Total Count</th>
-        </tr>
-        {% for key, count in key_counts.items() %}
-        <tr>
-            <td>{{ key }}</td>
-            <td>{{ count }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-
     <script>
         // Add this script at the bottom, before closing </body> tag
         var harperData = JSON.parse('{{ harper_data_json | safe }}');
