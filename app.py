@@ -92,12 +92,18 @@ def get_last_record_timestamp():
     return format_datetime(result['timestamp']) if result and result['timestamp'] else "No records found"
 
 def get_image_files():
-    """List all image files in the specified directory."""
+    """List all image files in the specified directories."""
     image_files = []
-    for filename in os.listdir(IMAGE_DIR):
-        if filename.endswith(('.png', '.jpg', '.jpeg', '.gif')):
-            # Note: Adjust the path based on how you want to reference it in the template
-            image_files.append(os.path.join('assets/hospital_images', filename))
+    directories = ['assets/hospital_images', 'assets/images']
+    
+    for directory in directories:
+        full_path = os.path.join(IMAGE_DIR, directory)
+        if os.path.exists(full_path):
+            for filename in os.listdir(full_path):
+                if filename.endswith(('.png', '.jpg', '.jpeg', '.gif')):
+                    # Note: Adjust the path based on how you want to reference it in the template
+                    image_files.append(os.path.join(directory, filename))
+    
     return image_files
 
 def get_events_last_3_days():
