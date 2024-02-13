@@ -32,12 +32,6 @@ def get_key_counts():
     """Get counts of each key press from the database."""
     return {row['key_label']: row['count'] for row in query_db("SELECT key_label, COUNT(*) as count FROM keypresses GROUP BY key_label")}
 
-def get_most_recent_keypress():
-    """Get the most recent key press timestamp."""
-    query = "SELECT MAX(timestamp) FROM keypresses"
-    result = query_db(query, one=True)
-    return result['MAX(timestamp)'] if result and result['MAX(timestamp)'] else None
-
 def get_last_event_times():
     """Get the last event time for each key press, split by category."""
     categories = {
@@ -156,6 +150,37 @@ def get_activities_last_X_days_for_twin(twin_name):
                 data[activity].append(count)
     return {'dates': dates, 'data': data}
 
+def get_diaper_count():
+    """Calculate the total number of unique diaper changes within a 1-minute window."""
+    diaper_changes = 0
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        # Fetch all relevant events, ordered by timestamp
+        cur.execute("""
+            SELECT timestamp FROM keypresses
+            WHERE key_label IN ('Pee Harper', 'Poo Harper', 'Pee Sophie', 'Poo Sophie')
+            ORDER BY timestamp ASC
+        """)
+        events = cur.fetchall()
+
+        # Placeholder for the last event to compare with
+        last_event_time = None
+
+        for event in events:
+            event_time = datetime.strptime(event[0], '%Y-%m-%d %H:%M:%S')
+            # If this is the first event or more than 1 minute from the last event, count it as a new diaper change
+            if last_event_time is None or event_time - last_event_time > timedelta(minutes=1):
+                diaper_changes += 1
+            last_event_time = event_time
+
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+    finally:
+        conn.close()
+
+    return diaper_changes
+
 @app.route('/add_note', methods=['POST'])
 def add_note():
     note_text = request.form['noteText']
@@ -167,10 +192,10 @@ def add_note():
 
 @app.route('/')
 def index():
-    # Fetch event times and image files
     last_event_times = get_last_event_times()
     image_files = get_image_files()
     last_updated = get_last_record_timestamp()
+    diaper_count = get_diaper_count()
     # Fetch events for the last 3 days
     events_last_3_days = get_events_last_3_days() 
     # Fetch activity data for Harper and Sophie
@@ -193,7 +218,8 @@ def index():
                            events_last_3_days=events_last_3_days,
                            harper_data_json=harper_data_json, 
                            sophie_data_json=sophie_data_json,
-			   last_updated=last_updated)
+			               last_updated=last_updated,
+                           diaper_count=diaper_count)
 
 @app.route('/notes')
 def notes_page():
