@@ -125,16 +125,25 @@
 
 @keyframes splatterAnimation {
     0% {
-        transform: scale(0); /* Start from nothing */
-        opacity: 1; /* Start fully visible */
+        transform: translate(-50%, -50%) scale(0) rotate(0deg); /* Start from nothing with no rotation */
+        opacity: 1;
     }
     50% {
-        transform: scale(2); /* Scale up for 'explode' effect */
+        transform: translate(-50%, -50%) scale(.7) rotate(90deg); /* Scale up and rotate */
         opacity: 1;
     }
     100% {
-        transform: scale(2); /* Stay at the scaled up size */
-        opacity: 0; /* Fade out */
+        transform: translate(-50%, -50%) scale(.8) rotate(180deg); /* Slightly scale down and rotate */
+        opacity: 0;
+    }
+}
+
+@keyframes rotateAnimation {
+    0% {
+        transform: rotate(0deg); /* Start with no rotation */
+    }
+    100% {
+        transform: rotate(360deg); /* Rotate 360 degrees */
     }
 }
 
@@ -142,17 +151,13 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) scale(0); /* Center the image and start from scale 0 */
-    opacity: 0; /* Start invisible */
-    width: 100%; /* Cover the entire section width */
-    max-width: none; /* Override any max-width */
-    z-index: 2; /* Above the text */
+    transform: translate(-50%, -50%) rotate(0deg); /* Start with no rotation */
+    opacity: 0;
+    width: auto;
+    max-width: 100%;
+    z-index: 2;
+    animation: splatterAnimation 2s ease forwards, rotateAnimation 2s ease forwards; /* Apply both animations */
 }
-
-/* Now use the defined animation */
-#splatter.animate {
-    animation: splatterAnimation 1s forwards; /* Adjust time as needed */
-}    
     </style>
 </head>
 <body>
@@ -296,9 +301,8 @@
 <div id="diaperCountSection" style="text-align:center; margin-top:20px; position: relative;">
     <h2>Diaper Dashboard</h2>
     <p>Keeping track of the twins' adventures in diaper land!</p>
-    <img id="splatter" src="{{ url_for('static', filename='assets/images/SplatterImage.png') }}" style="opacity: 0;" />
-    <div id="diaperCount" style="font-size:48px; font-weight:bold; color:#9ACD32; opacity: 0; position: relative;">0</div> <!-- Initial opacity set to 0 -->
-</div>
+    <img id="splatter" src="{{ url_for('static', filename='assets/images/SplatterImage.png') }}" />
+    <div id="diaperCount" style="font-size:48px; font-weight:bold; color:#9ACD32; position: relative;">0</div>
 </div>
     <script>
         // Add this script at the bottom, before closing </body> tag
@@ -403,8 +407,8 @@ const sophieChart = new Chart(sophieCtx, {
                 // Set a timeout to fade the splatter image and show the number
                 setTimeout(() => {
                     splatter.style.opacity = 0; // Make the splatter invisible
-                    animateValue("diaperCount", 0, {{ diaper_count }}, 1500); // Start the count animation
-                }, 1500); // This timeout should be the same as the duration of the splatterAnimation
+                    animateValue("diaperCount", 0, {{ diaper_count }}, 2000); // Start the count animation
+                }, 2000); // This timeout should be the same as the duration of the splatterAnimation
                 observer.unobserve(entry.target);
             }
         });
