@@ -123,21 +123,37 @@
             transform: scale(1.1); /* Slight zoom on hover */
         }
 
-@keyframes fall {
-  0% { transform: translateY(-100vh); opacity: 1; }
-  to { transform: translateY(80vh); opacity: 1; } /* Adjust to control fall endpoint */
+@keyframes splatterAnimation {
+    0% {
+        transform: scale(0); /* Start from nothing */
+        opacity: 0; /* Start from fully transparent */
+    }
+    30% {
+        transform: scale(5); /* Quickly scale up as if splattering on the screen */
+        opacity: .7; /* Fully visible */
+    }
+    60% {
+        transform: scale(1.5); /* Scale back to normal size */
+        opacity: 1; /* Still fully visible */
+    }
+    100% {
+        transform: scale(1); /* Remain at normal size */
+        opacity: 0; /* Fully fade out */
+    }
 }
 
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
+#splatter {
+    position: absolute;
+    top: -20vh;
+    left: 20%;
+    transform: translate(-50%, -50%) rotate(0deg); /* Start with no rotation */
+    opacity: 0;
+    width: auto;
+    max-width: 100%;
+    z-index: 2;
 }
-
-.icon {
-  animation: fall 2s ease-out, bounce 0.5s infinite ease-in-out;
-  position: absolute;
-  will-change: transform;
-}
+ 
+.animate {animation: splatterAnimation 3s ease forwards .5s}
 
 .chart-container {
     max-width: 600px; /* Adjust this value as needed */
@@ -293,6 +309,7 @@
 <div id="diaperCountSection" style="text-align:center; margin-top:20px; margin-bottom:20px; position: relative;">
     <h2>Diaper Dashboard</h2>
     <p>Keeping track of the twins' adventures in diaper land!</p>
+    <img id="splatter" src="{{ url_for('static', filename='assets/images/SplatterImage.svg') }}" />
     <div id="diaperCount" style="font-size:48px; font-weight:bold; color:#9ACD32; position: relative;">0</div>
     <h2>More to come...💩</h2>
 </div>
@@ -393,21 +410,23 @@ const sophieChart = new Chart(sophieCtx, {
     }
     </script>
    <script>
-document.addEventListener("DOMContentLoaded", function() {
+	document.addEventListener("DOMContentLoaded", function() {
     let observer = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                const icons = ['path/to/yourFirstIcon.svg', 'path/to/yourSecondIcon.svg']; // Paths to your icons
-                icons.forEach((iconSrc, index) => {
-                    setTimeout(() => { // Delay to stagger the icons' fall
-                        let iconImg = document.createElement('img');
-                        iconImg.src = iconSrc;
-                        iconImg.classList.add('icon');
-                        iconImg.style.left = `${Math.random() * window.innerWidth}px`; // Random horizontal position
-                        document.body.appendChild(iconImg);
-                    }, index * 500); // Staggered start for each icon
-                });
-                observer.unobserve(entry.target); // Optional: Stop observing after animation starts
+                let splatter = document.getElementById('splatter');
+                // Delay the start of the splatter animation
+                setTimeout(() => {
+                    splatter.classList.add('animate'); // Start the splatter animation after a delay
+                }, 1000); // Delay the animation by 1000 milliseconds (1 second)
+
+                // Another timeout to fade the splatter image and show the number
+                setTimeout(() => {
+                    splatter.style.opacity = 0; // Make the splatter invisible
+                    animateValue("diaperCount", 0, {{ diaper_count }}, 2000); // Start the count animation
+                }, 3000); // This timeout should be the sum of the animation delay and duration
+
+                observer.unobserve(entry.target);
             }
         });
     }, { threshold: 0.5, rootMargin: "0px" });
