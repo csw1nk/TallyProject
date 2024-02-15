@@ -142,26 +142,18 @@
     }
 }
 
-.animate {
-    animation: splatterAnimation 3s ease forwards .5s}
-
 #splatter {
     position: absolute;
-    top: -20vh; /* Center vertically in the parent */
-    left: 20%; /* Center horizontally in the parent */
-    transform: translate(-50%, -50%) rotate(0deg); /* Correctly center and apply initial rotation */
-    opacity: 0; /* Initially invisible */
+    top: -20vh;
+    left: 20%;
+    transform: translate(-50%, -50%) rotate(0deg); /* Start with no rotation */
+    opacity: 0;
     width: auto;
-    max-width: 90%; /* Ensure it doesn't overflow its container */
-    z-index: 2; /* Ensure it's above other content but below overlays */
+    max-width: 100%;
+    z-index: 2;
 }
-@media (max-width: 768px) {
-    #splatter {
-        max-width: 80%; /* Adjust size for smaller screens */
-        /* Consider adjusting 'top' and 'left' values if necessary */
-    }
-}
-
+ 
+.animate {animation: splatterAnimation 3s ease forwards .5s}
     </style>
 </head>
 <body>
@@ -272,7 +264,8 @@
       </table>
     </div>
 </div>
- <h2>Harper's Activity</h2>
+
+    <h2>Harper's Activity</h2>
 <canvas id="harperChart"></canvas>
 
 <h2>Sophie's Activity</h2>
@@ -301,17 +294,18 @@
         </div>
     {% endfor %}
 </div>
-<div id="diaperCountSection" style="text-align:center; margin-top:20px; margin-bottom:20px; position: relative; background-color: #FFA07A;">
+<div id="diaperCountSection" style="text-align:center; margin-top:20px; margin-bottom:20px; position: relative;">
     <h2>Diaper Dashboard</h2>
     <p>Keeping track of the twins' adventures in diaper land!</p>
     <img id="splatter" src="{{ url_for('static', filename='assets/images/SplatterImage.svg') }}" />
     <div id="diaperCount" style="font-size:48px; font-weight:bold; color:#9ACD32; position: relative;">0</div>
     <h2>More to come...💩</h2>
-    <div style="height:300px;></div> <!-- This div adds extra space below the diaper count section -->
+</div>
+<div style="height:300px;"> <!-- This div adds extra space below the diaper count section -->
     <!-- This space intentionally left blank to create a margin -->
 </div>
     <script>
-        </body> tag
+        // Add this script at the bottom, before closing </body> tag
         var harperData = JSON.parse('{{ harper_data_json | safe }}');
         var sophieData = JSON.parse('{{ sophie_data_json | safe }}');
         
