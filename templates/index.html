@@ -154,6 +154,14 @@
 }
  
 .animate {animation: splatterAnimation 3s ease forwards .5s}
+
+.chart-container {
+    max-width: 600px; /* Adjust this value as needed */
+    margin: 20px auto;
+    padding: 10px;
+    box-shadow: 0 0 10px #888888; /* Optional: Adds a shadow for better visibility */
+}
+
     </style>
 </head>
 <body>
@@ -265,11 +273,15 @@
     </div>
 </div>
 
+<div class="chart-container">
     <h2>Harper's Activity</h2>
-<canvas id="harperChart"></canvas>
+    <canvas id="harperChart"></canvas>
+</div>
 
-<h2>Sophie's Activity</h2>
-<canvas id="sophieChart"></canvas>
+<div class="chart-container">
+    <h2>Sophie's Activity</h2>
+    <canvas id="sophieChart"></canvas>
+</div>
     
     <h2>Events in the Last 3 Days</h2>
 <div style="display: flex; flex-wrap: wrap; justify-content: space-around;">
