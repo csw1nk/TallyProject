@@ -3,3 +3,4 @@ tally.db
 tally_backup.csv
 tally_backup.db
 output.log
+static/
