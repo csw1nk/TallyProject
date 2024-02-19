@@ -185,6 +185,30 @@ def get_diaper_count():
 
     return diaper_changes
 
+def get_activities_timestamps_for_twin(twin_name, days=7):
+    """
+    Fetch event timestamps for the specified twin for the last X days.
+    Events include feeding, pees, and poos.
+    """
+    end_date = datetime.now(pytz.timezone(TIMEZONE))
+    start_date = end_date - timedelta(days=days)
+    activities = ['Feeding', 'Pee', 'Poo']
+    data = {activity: [] for activity in activities}
+
+    with get_db_connection() as conn:
+        for activity in activities:
+            cur = conn.execute(f"""
+                SELECT timestamp
+                FROM keypresses
+                WHERE key_label LIKE ? AND timestamp BETWEEN ? AND ?
+                ORDER BY timestamp ASC
+            """, (f'{activity} {twin_name}%', start_date.strftime('%Y-%m-%d %H:%M:%S'), end_date.strftime('%Y-%m-%d %H:%M:%S')))
+            # Keep timestamps in ISO 8601 string format or convert to UNIX timestamp
+            timestamps = [row['timestamp'] for row in cur.fetchall()]
+            data[activity] = timestamps
+
+    return data
+
 @app.route('/add_note', methods=['POST'])
 def add_note():
     note_text = request.form['noteText']
@@ -209,6 +233,13 @@ def index():
     harper_data_json = json.dumps(harper_data)
     sophie_data_json = json.dumps(sophie_data)
 
+    harper_activities = get_activities_timestamps_for_twin('Harper', days=7)
+    sophie_activities = get_activities_timestamps_for_twin('Sophie', days=7)
+    
+    # Convert the data to JSON format for JavaScript to use in the Chart.js setup
+    harper_activities_json = json.dumps(harper_activities)
+    sophie_activities_json = json.dumps(sophie_activities)
+
     with get_db_connection() as conn:
         notes = conn.execute('SELECT text, created_at FROM notes ORDER BY created_at DESC').fetchall()
 
@@ -222,8 +253,10 @@ def index():
                            events_last_3_days=events_last_3_days,
                            harper_data_json=harper_data_json, 
                            sophie_data_json=sophie_data_json,
-			               last_updated=last_updated,
-                           diaper_count=diaper_count)
+			   last_updated=last_updated,
+                           diaper_count=diaper_count,
+			   harper_activities_json=harper_activities_json, 
+                           sophie_activities_json=sophie_activities_json)
 
 @app.route('/notes')
 def notes_page():

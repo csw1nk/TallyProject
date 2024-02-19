@@ -6,11 +6,6 @@
     <title>Harp & Soph Life Tracker</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"> <!-- Use Google Fonts for consistency -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Include Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Include Moment.js and the Chart.js adapter for Moment.js -->
-<script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0/dist/chartjs-adapter-moment.min.js"></script>
 <style>
         body {
             font-family: 'Roboto', sans-serif; /* More readable font */
@@ -282,12 +277,6 @@
     <h2>Sophie's Activity</h2>
     <canvas id="sophieChart"></canvas>
 </div>   
-<h2>Harper's Activity Timeline</h2>
-<canvas id="harperTimeline"></canvas>
-
-<h2>Sophie's Activity Timeline</h2>
-<canvas id="sophieTimeline"></canvas>
-
     <h2>Events in the Last 3 Days</h2>
 <div style="display: flex; flex-wrap: wrap; justify-content: space-around;">
     {% for category, labels in events_last_3_days.items() %}
@@ -479,85 +468,6 @@ function animateValue(id, start, end, duration, callback) {
         }
     }, stepTime);
 }
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Parse the JSON data for each twin
-    var harperActivities = JSON.parse('{{ harper_activities_json | safe }}');
-    var sophieActivities = JSON.parse('{{ sophie_activities_json | safe }}');
-
-    // Function to create a timeline chart
-    function createTimelineChart(canvasId, activities) {
-        const ctx = document.getElementById(canvasId).getContext('2d');
-        const timelineChart = new Chart(ctx, {
-            type: 'scatter',
-            data: {
-                datasets: [{
-                    label: 'Feedings',
-                    data: activities.Feeding.map(timestamp => ({x: new Date(timestamp), y: 0})),
-                    backgroundColor: 'rgba(255, 99, 132, 1)',
-                    pointStyle: 'rectRot',
-                }, {
-                    label: 'Pees',
-                    data: activities.Pee.map(timestamp => ({x: new Date(timestamp), y: 1})),
-                    backgroundColor: 'rgba(54, 162, 235, 1)',
-                    pointStyle: 'circle',
-                }, {
-                    label: 'Poos',
-                    data: activities.Poo.map(timestamp => ({x: new Date(timestamp), y: 2})),
-                    backgroundColor: 'rgba(255, 206, 86, 1)',
-                    pointStyle: 'triangle',
-                }]
-            },
-            options: {
-                scales: {
-                    x: {
-                        type: 'time',
-                        time: {
-                            unit: 'hour',
-                            tooltipFormat: 'MMM D, h:mm a',
-                            displayFormats: {
-                                hour: 'MMM D, hA'
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Time'
-                        }
-                    },
-                    y: {
-                        display: false
-                    }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed.y !== null) {
-                                    const eventTime = context.parsed.x;
-                                    label += new Date(eventTime).toLocaleTimeString('en-US', {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        hour12: true
-                                    });
-                                }
-                                return label;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    // Create charts for Harper and Sophie
-    createTimelineChart('harperTimeline', harperActivities);
-    createTimelineChart('sophieTimeline', sophieActivities);
-});
 </script>
 </body>
 </html>
