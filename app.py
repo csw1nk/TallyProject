@@ -1,5 +1,5 @@
 from flask import Flask, render_template, jsonify
-from flask import request
+from flask import request, redirect, url_for, flash
 import sqlite3
 from datetime import datetime, timedelta
 import pytz
@@ -107,7 +107,7 @@ def get_image_files():
 def get_events_last_3_days():
     conn = get_db_connection()
     events = {'Feeding': {}, 'Diapers': {}}
-    three_days_ago = datetime.now(pytz.timezone(TIMEZONE)) - timedelta(days=3)
+    three_days_ago = datetime.now(pytz.timezone(TIMEZONE)) - timedelta(days=1)
     labels = {
         'Feeding': ['Feeding Harper', 'Feeding Sophie'],
         'Diapers': ['Pee Harper','Poo Harper', 'Pee Sophie', 'Poo Sophie']
@@ -209,6 +209,21 @@ def get_activities_timestamps_for_twin(twin_name, days=7):
 
     return data
 
+def get_growth_records(twin_name):
+    """Fetch and return the growth records for the specified twin."""
+    with get_db_connection() as conn:
+        cur = conn.execute("""
+            SELECT date_recorded, weight_pounds, weight_ounces, height_inches
+            FROM growth_records
+            WHERE twin_name = ?
+            ORDER BY date_recorded DESC
+        """, (twin_name,))
+        growth_records = cur.fetchall()
+
+    # Assuming growth_records are in a format that needs no modification for 'date_recorded'
+    # Simply return the fetched records without formatting the 'date_recorded'
+    return growth_records
+
 @app.route('/add_note', methods=['POST'])
 def add_note():
     note_text = request.form['noteText']
@@ -240,6 +255,9 @@ def index():
     harper_activities_json = json.dumps(harper_activities)
     sophie_activities_json = json.dumps(sophie_activities)
 
+    harper_growth_records = get_growth_records('Harper')
+    sophie_growth_records = get_growth_records('Sophie')
+
     with get_db_connection() as conn:
         notes = conn.execute('SELECT text, created_at FROM notes ORDER BY created_at DESC').fetchall()
 
@@ -256,7 +274,9 @@ def index():
 			   last_updated=last_updated,
                            diaper_count=diaper_count,
 			   harper_activities_json=harper_activities_json, 
-                           sophie_activities_json=sophie_activities_json)
+                           sophie_activities_json=sophie_activities_json,
+			   harper_growth_records=harper_growth_records,
+                           sophie_growth_records=sophie_growth_records)
 
 @app.route('/notes')
 def notes_page():
@@ -264,5 +284,29 @@ def notes_page():
         notes = conn.execute('SELECT text, created_at FROM notes ORDER BY created_at DESC').fetchall()
     return render_template('notes.html', notes=notes)
 
+@app.route('/add_growth_record', methods=['POST'])
+def add_growth_record():
+    data = request.get_json()  # Parse JSON data from the request body
+
+    twin_name = data['twinName']
+    weight_pounds = data['weightPounds']
+    weight_ounces = data['weightOunces']
+    height_inches = data['heightInches']
+    # Assuming the date_recorded is generated within the function and not passed from the client
+    date_recorded = datetime.now(pytz.timezone('America/New_York')).strftime('%Y-%m-%d')
+
+    try:
+        with get_db_connection() as conn:
+            conn.execute("""
+                INSERT INTO growth_records (twin_name, date_recorded, weight_pounds, weight_ounces, height_inches)
+                VALUES (?, ?, ?, ?, ?)
+            """, (twin_name, date_recorded, weight_pounds, weight_ounces, height_inches))
+            conn.commit()
+
+        return jsonify({'success': True, 'message': 'Growth record added successfully!', 'dateRecorded': date_recorded})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+
