@@ -1,6 +1,7 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, send_file
 from flask import request, redirect, url_for, flash
 import sqlite3
+import subprocess
 from datetime import datetime, timedelta
 import pytz
 import os
@@ -315,6 +316,25 @@ def growth_records_page():
     return render_template('growth_records.html',
                            harper_growth_records=harper_growth_records,
                            sophie_growth_records=sophie_growth_records)
+
+@app.route('/generate-pdf')
+def generate_pdf():
+    # Define PDF file name with a timestamp
+    timestamp = datetime.now(pytz.timezone('America/New_York')).strftime('%Y-%m-%d_%H-%M-%S')
+    pdf_file = f'output_{timestamp}.pdf'
+
+    # Generate PDF from a template or a URL
+    rendered_html = render_template('your_template.html', data={'key': 'value'})
+    with open('temp.html', 'w') as f:
+        f.write(rendered_html)
+    
+    subprocess.run(['wkhtmltopdf', 'temp.html', pdf_file])
+
+    # Clean up the temporary HTML file
+    os.remove('temp.html')
+    
+    # Send the generated PDF file to the client
+    return send_file(pdf_file, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
