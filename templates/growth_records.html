@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensure proper mobile scaling -->
+    <title>Growth Records</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"> <!-- Use Google Fonts for consistency -->
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+	 body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #ffccf9;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        h1, h2 {
+            color: #ff66cc;
+        }
+        table {
+            width: auto;
+            margin: 20px auto;
+            border-collapse: collapse;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 10px #888888;
+        }
+        th, td {
+            border: 1px solid #ff99cc;
+            padding: 9px;
+            text-align: left;
+            border-radius: 10px;
+        }
+        th {
+            background-color: #ff66cc;
+            color: white;
+            font-size: 1.2em;
+        }
+        tr:nth-child(even) {
+            background-color: #ffccf9;
+        }
+        tr:hover {
+            background-color: #ffb3e6;
+        }
+
+        /* CSS styles for .growth-table-container and .growth-table */
+        .growth-table-container {
+            max-height: 300px;
+            max-width: 800px;
+            overflow-y: auto;
+            border: 2px solid #D6BFD6;
+            margin-bottom: 20px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .growth-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #F5E6F5;
+        }
+
+        .growth-table th,
+        .growth-table td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #D6BFD6;
+        }
+
+        .growth-table th {
+            background-color: #D6BFD6;
+            color: white;
+        }
+
+        /* Additional styles for the form */
+        form#growthForm {
+            display: flex;
+            flex-direction: column;
+            width: 80%;
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 2px solid #D6BFD6;
+            border-radius: 10px;
+            background-color: #F5E6F5;
+        }
+
+        form#growthForm label {
+            margin: 10px 0 5px;
+        }
+
+        form#growthForm input,
+        form#growthForm select {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #D6BFD6;
+            border-radius: 5px;
+        }
+
+        form#growthForm input[type="submit"] {
+            background-color: #D6BFD6;
+            color: white;
+            cursor: pointer;
+        }
+
+        form#growthForm input[type="submit"]:hover {
+            background-color: #C4AEC4;
+        }
+	.back-to-home {
+            display: block;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background-color: #D6BFD6; /* Match your theme */
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .back-to-home:hover {
+            background-color: #C4AEC4; /* Lighter purple on hover */
+        }
+      .charts-section {
+            max-width: 1000px; /* Adjust as needed */
+            margin: 20px auto;
+            padding: 20px;
+            border: 2px solid #D6BFD6;
+            background-color: #F5E6F5;
+        }
+
+        .chart-container {
+            margin-bottom: 30px; /* Space between chart containers */
+        }
+
+        .chart {
+            width: 100%; /* Full width of the container */
+            height: auto; /* Adjust height as needed */
+        }
+  .decorative-line-break {
+            width: 70%; /* Set the width to 70% */
+            margin: 20px auto; /* Center the line break horizontally and add some vertical space */
+            border: 0; /* Remove the default border */
+            height: 5px; /* Set the height of the line break */
+            background-color: #FFA07A; /* Sherbet orange color */
+            border-radius: 5px; /* Rounded corners */
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-to-home">Back to Home</a>
+    <h1>Add New Growth Record</h1>
+    <form id="growthForm">
+        <label for="twinName">Twin Name:</label>
+        <select name="twinName" id="twinName">
+            <option value="Harper">Harper</option>
+            <option value="Sophie">Sophie</option>
+        </select>
+
+        <label for="weightPounds">Weight (pounds):</label>
+        <input type="number" id="weightPounds" name="weightPounds" min="0">
+
+        <label for="weightOunces">Weight (ounces):</label>
+        <input type="number" id="weightOunces" name="weightOunces" min="0" max="15">
+
+        <label for="heightInches">Height (inches):</label>
+        <input type="number" id="heightInches" name="heightInches" min="0">
+
+        <input type="submit" value="Add Growth Record">
+    </form>
+    <div id="message"></div>
+
+    <h1>Growth Records</h1>
+
+    <section id="HarperSection">
+        <h2>Harper's Growth Records</h2>
+        <div class="growth-table-container">
+            <table class="growth-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Weight (lbs, oz)</th>
+                        <th>Height (inches)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in harper_growth_records %}
+                    <tr>
+                        <td>{{ record.date_recorded }}</td>
+                        <td>{{ record.weight_pounds }} lbs {{ record.weight_ounces }} oz</td>
+                        <td>{{ record.height_inches }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section id="SophieSection">
+        <h2>Sophie's Growth Records</h2>
+        <div class="growth-table-container">
+            <table class="growth-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Weight (lbs, oz)</th>
+                        <th>Height (inches)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in sophie_growth_records %}
+                    <tr>
+                        <td>{{ record.date_recorded }}</td>
+                        <td>{{ record.weight_pounds }} lbs {{ record.weight_ounces }} oz</td>
+                        <td>{{ record.height_inches }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    <hr class="decorative-line-break">
+    <section class="charts-section">
+        <h2>Growth Analytics</h2>
+        <!-- Placeholder for the weight gain chart -->
+        <div class="chart-container">
+            <h3>Weight Gain Chart</h3>
+            <canvas id="weightChart" class="chart"></canvas>
+            <!-- You will need to initialize Chart.js charts for each canvas -->
+        </div>
+        <!-- Placeholder for the height gain chart -->
+        <div class="chart-container">
+            <h3>Height Gain Chart</h3>
+            <canvas id="heightChart" class="chart"></canvas>
+        </div>
+        <!-- Placeholder for the percentile chart -->
+        <div class="chart-container">
+            <h3>Percentile Chart</h3>
+            <canvas id="percentileChart" class="chart"></canvas>
+        </div>
+        <!-- You can add more chart placeholders as needed -->
+    </section>
+
+    <!-- Include your JavaScript files here -->
+    <script>
+        // Initialization of charts using a library like Chart.js
+        // Sample initialization (you will need to provide actual data and options)
+        /*
+        new Chart(document.getElementById('weightChart'), {
+            type: 'line', // or 'bar', etc.
+            data: {
+                // data and labels for the weight chart
+            },
+            options: {
+                // options for the weight chart
+            }
+        });
+        */
+    </script>
+   <script>
+        document.getElementById('growthForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = {};
+            formData.forEach((value, key) => { data[key] = value; });
+
+            fetch('/add_growth_record', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display a success message.
+                document.getElementById('message').innerHTML = '<p>Submission successful!</p>';
+                // Optionally, clear the form if needed.
+                document.getElementById('growthForm').reset();
+                // Consider fetching and updating the growth records display here.
+            })
+            .catch((error) => {
+                // Handle errors by displaying an error message to the user.
+                document.getElementById('message').innerHTML = '<p>An error occurred during submission: ' + error.message + '</p>';
+            });
+        });
+    </script>    <!-- Add any additional sections or content here -->
+</body>
+</html>
