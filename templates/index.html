@@ -6,12 +6,8 @@
     <title>Harp & Soph Life Tracker</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"> <!-- Use Google Fonts for consistency -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Include Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Include Moment.js and the Chart.js adapter for Moment.js -->
-<script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0/dist/chartjs-adapter-moment.min.js"></script>
-<style>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <style>
         body {
             font-family: 'Roboto', sans-serif; /* More readable font */
             background-color: #ffccf9; /* Light pink background */
@@ -47,7 +43,7 @@
         tr:hover {
             background-color: #ffb3e6; /* Slightly darker pink on hover */
         }
- #calendar {
+#calendar {
             max-width: 900px;
             margin: 0 auto;
         }	
@@ -69,7 +65,7 @@
             margin: 20px auto;
             cursor: pointer; /* Indicates the image can be clicked */
         }
-        @media (min-width: 768px) { /* For desktop screens */
+@media (min-width: 768px) { /* For desktop screens */
             .content-image {
                 max-width: 50%; /* Adjust to a reasonable size on desktop */
             }
@@ -160,6 +156,33 @@
     margin: 20px auto;
     padding: 10px;
     box-shadow: 0 0 10px #888888; /* Optional: Adds a shadow for better visibility */
+}
+.growth-table-container {
+    max-height: 300px; /* Adjust to fit 5 rows */
+    max-width: 800px; /* Adjust this value as needed */
+    overflow-y: auto; /* Enable vertical scrolling */
+    border: 2px solid #D6BFD6; /* Light purple border */
+    margin-bottom: 20px; /* Space between tables */
+    margin-left: auto; /* Center the table container horizontally */
+    margin-right: auto; /* Center the table container horizontally */
+}
+
+.growth-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #F5E6F5; /* Light purple background */
+}
+
+.growth-table th,
+.growth-table td {
+    text-align: left;
+    padding: 8px;
+    border-bottom: 1px solid #D6BFD6; /* Light purple lines */
+}
+
+.growth-table th {
+    background-color: #D6BFD6; /* Light purple header */
+    color: white;
 }
 
     </style>
@@ -282,13 +305,7 @@
     <h2>Sophie's Activity</h2>
     <canvas id="sophieChart"></canvas>
 </div>   
-<h2>Harper's Activity Timeline</h2>
-<canvas id="harperTimeline"></canvas>
-
-<h2>Sophie's Activity Timeline</h2>
-<canvas id="sophieTimeline"></canvas>
-
-    <h2>Events in the Last 3 Days</h2>
+    <h2>Events in the Last 48 Hours</h2>
 <div style="display: flex; flex-wrap: wrap; justify-content: space-around;">
     {% for category, labels in events_last_3_days.items() %}
         <div style="margin: 10px;">
@@ -320,7 +337,73 @@
 <div style="height:120px;"> <!-- This div adds extra space below the diaper count section -->
     <!-- This space intentionally left blank to create a margin -->
 </div>
-    <script>
+
+ <h2>Sophiegirl and Harperbear's Measurements</h2>
+<form id="growthForm">
+    <label for="twinName">Twin Name:</label>
+    <select name="twinName" id="twinName">
+        <option value="Harper">Harper</option>
+        <option value="Sophie">Sophie</option>
+    </select>
+
+    <label for="weightPounds">Weight (pounds):</label>
+    <input type="number" id="weightPounds" name="weightPounds" min="0">
+
+    <label for="weightOunces">Weight (ounces):</label>
+    <input type="number" id="weightOunces" name="weightOunces" min="0" max="15">
+
+    <label for="heightInches">Height (inches):</label>
+    <input type="number" id="heightInches" name="heightInches" min="0">
+
+    <input type="submit" value="Add Growth Record">
+</form>
+<div id="message"></div>
+<div id="growthRecords">
+    <h2>Harper's Growth Records</h2>
+    <div class="growth-table-container">
+        <table class="growth-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Weight (lbs, oz)</th>
+                    <th>Height (inches)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in harper_growth_records[:5] %}
+                <tr>
+                    <td>{{ record.date_recorded }}</td>
+                    <td>{{ record.weight_pounds }} lbs {{ record.weight_ounces }} oz</td>
+                    <td>{{ record.height_inches }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <h2>Sophie's Growth Records</h2>
+    <div class="growth-table-container">
+        <table class="growth-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Weight (lbs, oz)</th>
+                    <th>Height (inches)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in sophie_growth_records[:5] %}
+                <tr>
+                    <td>{{ record.date_recorded }}</td>
+                    <td>{{ record.weight_pounds }} lbs {{ record.weight_ounces }} oz</td>
+                    <td>{{ record.height_inches }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
         // Add this script at the bottom, before closing </body> tag
         var harperData = JSON.parse('{{ harper_data_json | safe }}');
         var sophieData = JSON.parse('{{ sophie_data_json | safe }}');
@@ -453,7 +536,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 observer.unobserve(entry.target);
             }
         });
-    }, { threshold: 0.5, rootMargin: "0px" });
+    }, { threshold: 0 });
 
     observer.observe(document.getElementById('diaperCountSection'));
 });
@@ -481,82 +564,31 @@ function animateValue(id, start, end, duration, callback) {
 }
 </script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Parse the JSON data for each twin
-    var harperActivities = JSON.parse('{{ harper_activities_json | safe }}');
-    var sophieActivities = JSON.parse('{{ sophie_activities_json | safe }}');
+document.getElementById('growthForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const data = {};
+    formData.forEach((value, key) => { data[key] = value; });
 
-    // Function to create a timeline chart
-    function createTimelineChart(canvasId, activities) {
-        const ctx = document.getElementById(canvasId).getContext('2d');
-        const timelineChart = new Chart(ctx, {
-            type: 'scatter',
-            data: {
-                datasets: [{
-                    label: 'Feedings',
-                    data: activities.Feeding.map(timestamp => ({x: new Date(timestamp), y: 0})),
-                    backgroundColor: 'rgba(255, 99, 132, 1)',
-                    pointStyle: 'rectRot',
-                }, {
-                    label: 'Pees',
-                    data: activities.Pee.map(timestamp => ({x: new Date(timestamp), y: 1})),
-                    backgroundColor: 'rgba(54, 162, 235, 1)',
-                    pointStyle: 'circle',
-                }, {
-                    label: 'Poos',
-                    data: activities.Poo.map(timestamp => ({x: new Date(timestamp), y: 2})),
-                    backgroundColor: 'rgba(255, 206, 86, 1)',
-                    pointStyle: 'triangle',
-                }]
-            },
-            options: {
-                scales: {
-                    x: {
-                        type: 'time',
-                        time: {
-                            unit: 'hour',
-                            tooltipFormat: 'MMM D, h:mm a',
-                            displayFormats: {
-                                hour: 'MMM D, hA'
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Time'
-                        }
-                    },
-                    y: {
-                        display: false
-                    }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed.y !== null) {
-                                    const eventTime = context.parsed.x;
-                                    label += new Date(eventTime).toLocaleTimeString('en-US', {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        hour12: true
-                                    });
-                                }
-                                return label;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    // Create charts for Harper and Sophie
-    createTimelineChart('harperTimeline', harperActivities);
-    createTimelineChart('sophieTimeline', sophieActivities);
+    fetch('/add_growth_record', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Display a success message.
+        document.getElementById('message').innerHTML = '<p>Submission successful!</p>';
+        // Optionally, clear the form if needed.
+        document.getElementById('growthForm').reset();
+        // Update any other UI elements as necessary.
+    })
+    .catch((error) => {
+        // Handle errors by displaying an error message to the user.
+        document.getElementById('message').innerHTML = '<p>An error occurred during submission.</p>';
+    });
 });
 </script>
 </body>
