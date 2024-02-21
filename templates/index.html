@@ -157,37 +157,27 @@
     padding: 10px;
     box-shadow: 0 0 10px #888888; /* Optional: Adds a shadow for better visibility */
 }
-.growth-table-container {
-    max-height: 300px; /* Adjust to fit 5 rows */
-    max-width: 800px; /* Adjust this value as needed */
-    overflow-y: auto; /* Enable vertical scrolling */
-    border: 2px solid #D6BFD6; /* Light purple border */
-    margin-bottom: 20px; /* Space between tables */
-    margin-left: auto; /* Center the table container horizontally */
-    margin-right: auto; /* Center the table container horizontally */
-}
+  .button-style {
+    background-color: #D6BFD6; /* Light purple background */
+    color: white; /* White text */
+    padding: 10px 20px; /* Padding around the text */
+    border: none; /* No border */
+    border-radius: 5px; /* Rounded corners */
+    font-weight: bold; /* Bold text */
+    cursor: pointer; /* Cursor changes to a pointer when hovered */
+    text-decoration: none; /* No underline for links */
+    display: inline-block; /* Allows applying padding and dimensions */
+    margin: 5px 0; /* Margin for spacing */
+  }
 
-.growth-table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #F5E6F5; /* Light purple background */
-}
-
-.growth-table th,
-.growth-table td {
-    text-align: left;
-    padding: 8px;
-    border-bottom: 1px solid #D6BFD6; /* Light purple lines */
-}
-
-.growth-table th {
-    background-color: #D6BFD6; /* Light purple header */
-    color: white;
-}
-
-    </style>
+  /* If you want the buttons to change color when hovered over, add this */
+  .button-style:hover {
+    background-color: #C4AEC4; /* Slightly lighter purple */
+  }
+</style>
 </head>
 <body>
+<a href="/generate-pdf" class="top-right-button" style="position: absolute; top: 10px; right: 10px; padding: 10px 20px; background-color: #D6BFD6; color: white; text-align: center; text-decoration: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Download as PDF</a>
     <div id="currentDateTime" class="timestamp"></div>
     <div class="timestamp">Last Updated On: {{ last_updated }}</div>
 
@@ -209,7 +199,20 @@
     </script>
 
     <h1>Harper and Sophie's Life Tracker</h1>
-    <!-- Clickable feature image that opens the gallery -->
+  <!-- Place this where you want the button to appear on your index page -->
+<div style="text-align:center; margin-top: 20px;">
+    <button id="viewGrowthRecordsBtn" style="background-color: #D6BFD6; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">View Growth Records</button>
+</div>
+
+<script>
+    document.getElementById('viewGrowthRecordsBtn').addEventListener('click', function() {
+        window.location.href = '/growth_records';
+    });
+</script>  <!-- Clickable feature image that opens the gallery -->
+<div id="ageTicker">
+    <h2>Harper's Age: <span id="harperAge"></span></h2>
+    <h2>Sophie's Age: <span id="sophieAge"></span></h2>
+</div>
     <img src="{{ url_for('static', filename='assets/hospital_images/girlsbasket.jpg') }}" alt="Photo of the girls in basket day 2 of life" class="content-image" onclick="toggleGallery(true)">
 
     <!-- Gallery Overlay -->
@@ -255,16 +258,16 @@
         </div>
     </div>
 
-    <h2>Add Note or Reminder</h2>
-    <form id="noteForm">
-        <label for="noteText">Note:</label><br>
-        <textarea id="noteText" name="noteText" rows="4" cols="50"></textarea><br>
-        <input type="button" value="Submit" onclick="submitNote()">
-      </form>
-      <a href="/notes">View Notes</a>
-      <div>
-      <div style="display: flex; justify-content: space-around;">
-      <div>
+<h2>Add Note or Reminder</h2>
+<form id="noteForm">
+  <label for="noteText">Note:</label><br>
+  <textarea id="noteText" name="noteText" rows="4" cols="50"></textarea><br>
+  <input type="button" class="button-style" value="Submit" onclick="submitNote()">
+</form>
+<a href="/notes" class="button-style">View Notes</a>
+<div>
+  <div style="display: flex; justify-content: space-around;">
+  <div>
       <h2>Today's Counts</h2>
       <table>
           <tr>
@@ -338,71 +341,6 @@
     <!-- This space intentionally left blank to create a margin -->
 </div>
 
- <h2>Sophiegirl and Harperbear's Measurements</h2>
-<form id="growthForm">
-    <label for="twinName">Twin Name:</label>
-    <select name="twinName" id="twinName">
-        <option value="Harper">Harper</option>
-        <option value="Sophie">Sophie</option>
-    </select>
-
-    <label for="weightPounds">Weight (pounds):</label>
-    <input type="number" id="weightPounds" name="weightPounds" min="0">
-
-    <label for="weightOunces">Weight (ounces):</label>
-    <input type="number" id="weightOunces" name="weightOunces" min="0" max="15">
-
-    <label for="heightInches">Height (inches):</label>
-    <input type="number" id="heightInches" name="heightInches" min="0">
-
-    <input type="submit" value="Add Growth Record">
-</form>
-<div id="message"></div>
-<div id="growthRecords">
-    <h2>Harper's Growth Records</h2>
-    <div class="growth-table-container">
-        <table class="growth-table">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Weight (lbs, oz)</th>
-                    <th>Height (inches)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for record in harper_growth_records[:5] %}
-                <tr>
-                    <td>{{ record.date_recorded }}</td>
-                    <td>{{ record.weight_pounds }} lbs {{ record.weight_ounces }} oz</td>
-                    <td>{{ record.height_inches }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    
-    <h2>Sophie's Growth Records</h2>
-    <div class="growth-table-container">
-        <table class="growth-table">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Weight (lbs, oz)</th>
-                    <th>Height (inches)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for record in sophie_growth_records[:5] %}
-                <tr>
-                    <td>{{ record.date_recorded }}</td>
-                    <td>{{ record.weight_pounds }} lbs {{ record.weight_ounces }} oz</td>
-                    <td>{{ record.height_inches }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
 <script>
         // Add this script at the bottom, before closing </body> tag
         var harperData = JSON.parse('{{ harper_data_json | safe }}');
@@ -564,33 +502,81 @@ function animateValue(id, start, end, duration, callback) {
 }
 </script>
 <script>
-document.getElementById('growthForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const data = {};
-    formData.forEach((value, key) => { data[key] = value; });
+    // Function to calculate and display the age
+    function updateAges() {
+        // Birthdates and times (in your local timezone)
+        var harperBirthday = new Date('January 30, 2024 22:47:00 EST');
+        var sophieBirthday = new Date('January 30, 2024 23:04:00 EST');
 
-    fetch('/add_growth_record', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Display a success message.
-        document.getElementById('message').innerHTML = '<p>Submission successful!</p>';
-        // Optionally, clear the form if needed.
-        document.getElementById('growthForm').reset();
-        // Update any other UI elements as necessary.
-    })
-    .catch((error) => {
-        // Handle errors by displaying an error message to the user.
-        document.getElementById('message').innerHTML = '<p>An error occurred during submission.</p>';
-    });
-});
+        // Calculate ages
+        var harperAge = calculateAge(harperBirthday);
+        var sophieAge = calculateAge(sophieBirthday);
+
+        // Update the page
+        document.getElementById('harperAge').textContent = formatAge(harperAge);
+        document.getElementById('sophieAge').textContent = formatAge(sophieAge);
+    }
+
+    // Function to calculate the age difference given a birthdate
+    function calculateAge(birthDate) {
+        var now = new Date();
+        var ageDiff = now - birthDate; // age in milliseconds
+        var ageDate = new Date(ageDiff); // 'age' as a date object since epoch
+        return {
+            years: now.getFullYear() - birthDate.getFullYear(),
+            months: now.getMonth() - birthDate.getMonth(),
+            days: now.getDate() - birthDate.getDate(),
+            hours: now.getHours() - birthDate.getHours(),
+            minutes: now.getMinutes() - birthDate.getMinutes()
+        };
+    }
+
+    // Function to format the age for display
+    function formatAge(age) {
+        // Correct for negative values by borrowing from the next highest unit
+        if (age.minutes < 0) {
+            age.minutes += 60;
+            age.hours--;
+        }
+        if (age.hours < 0) {
+            age.hours += 24;
+            age.days--;
+        }
+        if (age.days < 0) {
+            // Borrow days from the previous month (assumes 30 days per month)
+            age.days += 30;
+            age.months--;
+        }
+        if (age.months < 0) {
+            age.months += 12;
+            age.years--;
+        }
+        // Return the formatted string
+        return age.years + ' years, ' +
+               age.months + ' months, ' +
+               age.days + ' days, ' +
+               age.hours + ' hours, and ' +
+               age.minutes + ' minutes';
+    }
+
+    // Initialize the ticker once and set it to update every minute
+    updateAges();
+    setInterval(updateAges, 60000); // Update every 60,000 milliseconds (1 minute)
 </script>
+<script>
+        document.getElementById('downloadPdf').addEventListener('click', () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.html(document.body, {
+                callback: function (doc) {
+                    doc.save('webpage.pdf');
+                },
+                x: 10,
+                y: 10
+            });
+        });
+    </script>
 </body>
 </html>
 

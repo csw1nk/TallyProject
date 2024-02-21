@@ -307,6 +307,15 @@ def add_growth_record():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/growth_records')
+def growth_records_page():
+    harper_growth_records = get_growth_records('Harper')
+    sophie_growth_records = get_growth_records('Sophie')
+
+    return render_template('growth_records.html',
+                           harper_growth_records=harper_growth_records,
+                           sophie_growth_records=sophie_growth_records)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
 

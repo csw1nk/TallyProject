@@ -2,39 +2,118 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"> <!-- Use Google Fonts for consistency -->
     <style>
+ body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #ffccf9;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        h2 {
+            color: #ff66cc;
+            margin-bottom: 20px;
+        }
         table {
-            width: 100%;
+            width: auto;
+            margin: 20px auto;
             border-collapse: collapse;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 10px #888888;
         }
         th, td {
-            border: 1px solid black;
+            border: 1px solid #ff99cc;
             padding: 8px;
             text-align: left;
+            border-radius: 10px;
         }
         th {
-            background-color: #f2f2f2;
+            background-color: #ff66cc;
+            color: white;
+            font-size: 1.2em;
+        }
+        tr:nth-child(even) {
+            background-color: #ffccf9;
+        }
+        tr:hover {
+            background-color: #ffb3e6;
+        }
+        /* Additional styling for 'coolness' */
+        .note-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .note {
+            background: #f9f9f9;
+            padding: 10px;
+            border-left: 4px solid #ff66cc;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .note p {
+            margin: 0;
+            padding: 0;
+        }
+        .note-meta {
+            font-size: 0.85em;
+            color: #888;
+            margin-bottom: 5px;
+        }
+.back-to-home {
+            display: block;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background-color: #D6BFD6;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .back-to-home:hover {
+            background-color: #C4AEC4;
         }
     </style>
 </head>
 <body>
-    <h2>Notes</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Created At</th>
-                <th>Note</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for note in notes %}
-            <tr>
-                <td>{{ note.created_at }}</td>
-                <td>{{ note.text }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <a href="/" class="back-to-home">Back to Home</a>
+   <h2>Notes</h2>
+    <div class="note-container">
+        {% for note in notes %}
+        <div class="note">
+            <div class="note-meta" data-utc-date="{{ note.created_at }}"></div>
+            <p>{{ note.text }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Function to format the date to a more readable form
+        function formatDateTime(utcDateString, timezone) {
+            const utcDate = new Date(utcDateString);
+            const options = {
+                timeZone: timezone,
+                year: 'numeric', month: 'long', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+            };
+            return new Intl.DateTimeFormat('en-US', options).format(utcDate);
+        }
+
+        // Convert and display the local formatted date for each note
+        document.querySelectorAll('.note-meta').forEach(function(elem) {
+            const utcDate = elem.getAttribute('data-utc-date');
+            // You can change 'America/New_York' to your desired time zone
+            elem.textContent = formatDateTime(utcDate, 'America/New_York');
+        });
+    </script>
 </body>
 </html>
