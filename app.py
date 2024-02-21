@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify, send_file
 from flask import request, redirect, url_for, flash
+from werkzeug.utils import secure_filename
 import sqlite3
 import subprocess
 from datetime import datetime, timedelta
@@ -13,6 +14,8 @@ app = Flask(__name__)
 DATABASE = 'tally.db'
 TIMEZONE = 'America/New_York'
 IMAGE_DIR = os.path.join(app.root_path, 'static')
+UPLOAD_FOLDER = 'static/assets/uploaded_images'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -335,6 +338,20 @@ def generate_pdf():
     
     # Send the generated PDF file to the client
     return send_file(pdf_file, as_attachment=True)
+
+@app.route('/add_image', methods=['POST'])
+def add_image():
+    image = request.files['imageUpload']
+    if image:
+        filename = secure_filename(image.filename)
+        save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        image.save(save_path)
+        message = f"Image '{filename}' added successfully!"
+    else:
+        message = "No image uploaded."
+
+    # Respond with a JSON message
+    return jsonify({'message': message})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

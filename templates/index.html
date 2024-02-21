@@ -157,27 +157,84 @@
     padding: 10px;
     box-shadow: 0 0 10px #888888; /* Optional: Adds a shadow for better visibility */
 }
-  .button-style {
-    background-color: #D6BFD6; /* Light purple background */
-    color: white; /* White text */
-    padding: 10px 20px; /* Padding around the text */
-    border: none; /* No border */
-    border-radius: 5px; /* Rounded corners */
-    font-weight: bold; /* Bold text */
-    cursor: pointer; /* Cursor changes to a pointer when hovered */
-    text-decoration: none; /* No underline for links */
-    display: inline-block; /* Allows applying padding and dimensions */
-    margin: 5px 0; /* Margin for spacing */
-  }
+ .button-style {
+            background-color: #D6BFD6; /* Light purple background */
+            color: white; /* White text */
+            padding: 10px 20px; /* Padding around the text */
+            border: none; /* No border */
+            border-radius: 5px; /* Rounded corners */
+            font-weight: bold; /* Bold text */
+            cursor: pointer; /* Cursor changes to a pointer when hovered */
+            text-decoration: none; /* No underline for links */
+            display: inline-block; /* Allows applying padding and dimensions */
+            margin: 5px 0; /* Margin for spacing */
+        }
 
-  /* If you want the buttons to change color when hovered over, add this */
-  .button-style:hover {
-    background-color: #C4AEC4; /* Slightly lighter purple */
-  }
+        /* Hover effect for buttons */
+        .button-style:hover {
+            background-color: #C4AEC4; /* Slightly lighter purple */
+        }
+
+        /* Style for the form */
+        #noteForm {
+            margin: 20px auto; /* Center the form horizontally */
+            text-align: center; /* Center the form elements */
+ 	    max-width: 750px; /* Limit the maximum width of the form */
+        }
+
+        /* Style for the text area */
+        #noteText {
+            width: 100%; /* Make textarea full width */
+            box-sizing: border-box; /* Include padding and border in the element's width */
+            margin-bottom: 10px; /* Space below the textarea */
+	    max-width: 100%; /* Set maximum width to 100% */
+        }
+
+        /* Style for the file input */
+        #imageUpload {
+            display: none; /* Hide the default file input */
+        }
+
+        .file-upload-label {
+            background-color: #D6BFD6; /* Light purple background */
+            color: white; /* White text */
+            padding: 10px 20px; /* Padding around the text */
+            border: none; /* No border */
+            border-radius: 5px; /* Rounded corners */
+            font-weight: bold; /* Bold text */
+            cursor: pointer; /* Cursor changes to a pointer when hovered */
+            display: inline-block; /* Allows applying padding and dimensions */
+            margin-bottom: 10px; /* Space below the file upload container */
+        }
+
+        /* Style for the file upload container */
+        .file-upload-container {
+            text-align: center; /* Center-align the file upload container */
+        }
+ .file-input-container {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+        background-color: #D6BFD6; /* Light purple background */
+        color: white; /* White text */
+        padding: 10px 20px; /* Padding around the text */
+        border: none; /* No border */
+        border-radius: 5px; /* Rounded corners */
+        font-weight: bold; /* Bold text */
+        cursor: pointer; /* Cursor changes to a pointer when hovered */
+    }
+
+    /* Style for the actual file input */
+    .file-input-container input[type=file] {
+        position: absolute;
+        font-size: 100px;
+        opacity: 0;
+        right: 0;
+        top: 0;
+    }
 </style>
 </head>
 <body>
-<a href="/generate-pdf" class="top-right-button" style="position: absolute; top: 10px; right: 10px; padding: 10px 20px; background-color: #D6BFD6; color: white; text-align: center; text-decoration: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Download as PDF</a>
     <div id="currentDateTime" class="timestamp"></div>
     <div class="timestamp">Last Updated On: {{ last_updated }}</div>
 
@@ -257,15 +314,25 @@
             </table>
         </div>
     </div>
+ <h2>Add Note or Reminder</h2>
+    <form id="noteForm">
+        <label for="noteText">Note:</label><br>
+        <textarea id="noteText" name="noteText" rows="4" cols="50"></textarea><br>
+        <input type="button" value="Submit" class="button-style" onclick="submitNote()">
+      </form>
+    <a href="/notes" class="button-style">View Notes</a>
 
-<h2>Add Note or Reminder</h2>
-<form id="noteForm">
-  <label for="noteText">Note:</label><br>
-  <textarea id="noteText" name="noteText" rows="4" cols="50"></textarea><br>
-  <input type="button" class="button-style" value="Submit" onclick="submitNote()">
+<h2>Add Image</h2>
+<form id="imageForm" method="post" action="/add_image" enctype="multipart/form-data">
+    <label for="imageUpload" class="file-input-label">Choose Image</label>
+    <div class="file-input-container">
+        <input type="file" id="imageUpload" name="imageUpload">
+    </div>
+    <br>
+    <input type="submit" value="Upload Image">
 </form>
-<a href="/notes" class="button-style">View Notes</a>
-<div>
+<div id="imageMessage"></div>
+
   <div style="display: flex; justify-content: space-around;">
   <div>
       <h2>Today's Counts</h2>
