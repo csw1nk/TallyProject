@@ -190,48 +190,46 @@
 	    max-width: 100%; /* Set maximum width to 100% */
         }
 
-        /* Style for the file input */
-        #imageUpload {
-            display: none; /* Hide the default file input */
-        }
+/* Style for the file input */
+#imageUpload {
+    display: none; /* Hide the default file input */
+}
 
-        .file-upload-label {
-            background-color: #D6BFD6; /* Light purple background */
-            color: white; /* White text */
-            padding: 10px 20px; /* Padding around the text */
-            border: none; /* No border */
-            border-radius: 5px; /* Rounded corners */
-            font-weight: bold; /* Bold text */
-            cursor: pointer; /* Cursor changes to a pointer when hovered */
-            display: inline-block; /* Allows applying padding and dimensions */
-            margin-bottom: 10px; /* Space below the file upload container */
-        }
+.file-upload-label {
+    background-color: #D6BFD6; /* Light purple background */
+    color: white; /* White text */
+    padding: 10px 20px; /* Padding around the text */
+    border: none; /* No border */
+    border-radius: 5px; /* Rounded corners */
+    font-weight: bold; /* Bold text */
+    cursor: pointer; /* Cursor changes to a pointer when hovered */
+    display: inline-block; /* Allows applying padding and dimensions */
+    margin-bottom: 10px; /* Space below the file upload container */
+}
 
-        /* Style for the file upload container */
-        .file-upload-container {
-            text-align: center; /* Center-align the file upload container */
-        }
- .file-input-container {
-        position: relative;
-        overflow: hidden;
-        display: inline-block;
-        background-color: #D6BFD6; /* Light purple background */
-        color: white; /* White text */
-        padding: 10px 20px; /* Padding around the text */
-        border: none; /* No border */
-        border-radius: 5px; /* Rounded corners */
-        font-weight: bold; /* Bold text */
-        cursor: pointer; /* Cursor changes to a pointer when hovered */
-    }
+/* Style for the file upload container */
+.file-upload-container {
+    text-align: center; /* Center-align the file upload container */
+}
 
-    /* Style for the actual file input */
-    .file-input-container input[type=file] {
-        position: absolute;
-        font-size: 100px;
-        opacity: 0;
-        right: 0;
-        top: 0;
-    }
+.file-input-container {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    background-color: #D6BFD6; /* Light purple background */
+    color: white; /* White text */
+    padding: 10px 20px; /* Padding around the text */
+    border: none; /* No border */
+    border-radius: 5px; /* Rounded corners */
+    font-weight: bold; /* Bold text */
+    cursor: pointer; /* Cursor changes to a pointer when hovered */
+}
+
+.file-input-container input[type=file] {
+    position: absolute;
+    font-size: 100px;
+}
+
 </style>
 </head>
 <body>
@@ -324,9 +322,10 @@
 
 <h2>Add Image</h2>
 <form id="imageForm" method="post" action="/add_image" enctype="multipart/form-data">
-    <label for="imageUpload" class="file-input-label">Choose Image</label>
-    <div class="file-input-container">
-        <input type="file" id="imageUpload" name="imageUpload">
+    <label for="imageUpload" class="file-upload-label">Choose Image</label> <!-- Adjusted class name -->
+    <div class="file-upload-container"> <!-- Adjusted class name -->
+        <input type="file" id="imageUpload" name="imageUpload" class="file-input">
+	<div id="imagePreview" style="margin-top: 20px;"></div>
     </div>
     <br>
     <input type="submit" value="Upload Image">
@@ -644,6 +643,28 @@ function animateValue(id, start, end, duration, callback) {
             });
         });
     </script>
+<script>
+  document.getElementById('imageUpload').addEventListener('change', function(event) {
+    var imagePreview = document.getElementById('imagePreview');
+    imagePreview.innerHTML = ''; // Clear the preview container
+
+    // Ensure a file was selected
+    if (this.files && this.files[0]) {
+      var reader = new FileReader();
+
+      reader.onload = function(e) {
+        var img = document.createElement('img');
+        img.src = e.target.result;
+        img.style.maxWidth = '200px'; // Set the maximum width of the preview image
+        img.style.maxHeight = '200px'; // Set the maximum height of the preview image
+        img.style.marginRight = '10px'; // Optional: add some margin to the image
+        imagePreview.appendChild(img);
+      };
+
+      reader.readAsDataURL(this.files[0]);
+    }
+  });
+</script>
 </body>
 </html>
 
