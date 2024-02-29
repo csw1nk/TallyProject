@@ -156,28 +156,36 @@ def get_activities_last_X_days_for_twin(twin_name):
     return {'dates': dates, 'data': data}
 
 def get_diaper_count():
-    """Calculate the total number of unique diaper changes within a 1-minute window."""
+    """Calculate the total number of unique diaper changes within a 1-minute window for each girl."""
     diaper_changes = 0
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        # Fetch all relevant events, ordered by timestamp
+        # Fetch all relevant events, ordered by timestamp and girl
         cur.execute("""
-            SELECT timestamp FROM keypresses
+            SELECT timestamp, key_label FROM keypresses
             WHERE key_label IN ('Pee Harper', 'Poo Harper', 'Pee Sophie', 'Poo Sophie')
             ORDER BY timestamp ASC
         """)
         events = cur.fetchall()
 
-        # Placeholder for the last event to compare with
-        last_event_time = None
+        # Placeholders for the last event time for each girl
+        last_event_time_harper = None
+        last_event_time_sophie = None
 
         for event in events:
             event_time = datetime.strptime(event[0], '%Y-%m-%d %H:%M:%S')
-            # If this is the first event or more than 1 minute from the last event, count it as a new diaper change
-            if last_event_time is None or event_time - last_event_time > timedelta(minutes=1):
-                diaper_changes += 1
-            last_event_time = event_time
+            key_label = event[1]
+
+            # Determine which girl's last event time to compare
+            if 'Harper' in key_label:
+                if last_event_time_harper is None or event_time - last_event_time_harper > timedelta(minutes=1):
+                    diaper_changes += 1
+                last_event_time_harper = event_time
+            elif 'Sophie' in key_label:
+                if last_event_time_sophie is None or event_time - last_event_time_sophie > timedelta(minutes=1):
+                    diaper_changes += 1
+                last_event_time_sophie = event_time
 
     except sqlite3.Error as e:
         print(f"SQLite error: {e}")
