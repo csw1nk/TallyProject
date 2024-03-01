@@ -7,6 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"> <!-- Use Google Fonts for consistency -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.33/moment-timezone-with-data-1970-2030.min.js"></script>
+
     <style>
         body {
             font-family: 'Roboto', sans-serif; /* More readable font */
@@ -58,13 +61,16 @@
         box-sizing: border-box; /* Include padding and border in the width */
     }
 }
-        .content-image {
-            max-width: 100%; /* Full width on smaller screens */
-            height: auto;
-            display: block;
-            margin: 20px auto;
-            cursor: pointer; /* Indicates the image can be clicked */
-        }
+.content-image {
+    max-width: 750px; /* Maximum width for images */
+    max-height: 750px; /* Maximum height for images to handle tall images */
+    width: auto; /* Adjust width automatically to maintain aspect ratio */
+    height: auto; /* Adjust height automatically to maintain aspect ratio */
+    display: block;
+    margin: 20px auto; /* Centers the image */
+    object-fit: contain; /* Ensures the image is scaled to maintain its aspect ratio while fitting within the element's box */
+    cursor: pointer; /* Indicates the image can be clicked */
+}
 @media (min-width: 768px) { /* For desktop screens */
             .content-image {
                 max-width: 50%; /* Adjust to a reasonable size on desktop */
@@ -331,16 +337,22 @@
     <h2>Harper's Age: <span id="harperAge"></span></h2>
     <h2>Sophie's Age: <span id="sophieAge"></span></h2>
 </div>
-    <img src="{{ url_for('static', filename='assets/hospital_images/girlsbasket.jpg') }}" alt="Photo of the girls in basket day 2 of life" class="content-image" onclick="toggleGallery(true)">
 
-    <!-- Gallery Overlay -->
-    <div id="galleryOverlay">
-        <span class="closeBtn" onclick="toggleGallery(false)">&times;</span>
-        <!-- Dynamically loaded images from Flask -->
-        {% for image in image_files %}
+<div>
+    {% if random_image %}
+        <img src="{{ url_for('static', filename=random_image) }}" alt="Featured Image" class="content-image">
+    {% else %}
+        <p>No featured image available.</p>
+    {% endif %}
+</div>
+<!-- Gallery Overlay -->
+<div id="galleryOverlay">
+    <span class="closeBtn" onclick="toggleGallery(false)">&times;</span>
+    <!-- Dynamically loaded images from Flask -->
+    {% for image in image_files %}
         <img src="{{ url_for('static', filename=image) }}" class="galleryImg" alt="Gallery Image">
-        {% endfor %}
-    </div>
+    {% endfor %}
+</div>
 
     <h2>Last Event Times</h2>
     <div style="display: flex; justify-content: space-around;">
@@ -657,66 +669,38 @@ function animateValue(id, start, end, duration, callback) {
 }
 </script>
 <script>
-    // Function to calculate and display the age
-    function updateAges() {
-        // Birthdates and times (in your local timezone)
-        var harperBirthday = new Date('January 30, 2024 22:47:00 EST');
-        var sophieBirthday = new Date('January 30, 2024 23:04:00 EST');
+function updateAges() {
+    // Define the birthdates in EST
+    var harperBirthday = moment.tz("2024-01-30 22:47:00", "America/New_York");
+    var sophieBirthday = moment.tz("2024-01-30 23:04:00", "America/New_York");
 
-        // Calculate ages
-        var harperAge = calculateAge(harperBirthday);
-        var sophieAge = calculateAge(sophieBirthday);
+    // Get the current time in EST
+    var now = moment.tz("America/New_York");
 
-        // Update the page
-        document.getElementById('harperAge').textContent = formatAge(harperAge);
-        document.getElementById('sophieAge').textContent = formatAge(sophieAge);
-    }
+    // Calculate age
+    var harperAge = moment.duration(now.diff(harperBirthday));
+    var sophieAge = moment.duration(now.diff(sophieBirthday));
 
-    // Function to calculate the age difference given a birthdate
-    function calculateAge(birthDate) {
-        var now = new Date();
-        var ageDiff = now - birthDate; // age in milliseconds
-        var ageDate = new Date(ageDiff); // 'age' as a date object since epoch
-        return {
-            years: now.getFullYear() - birthDate.getFullYear(),
-            months: now.getMonth() - birthDate.getMonth(),
-            days: now.getDate() - birthDate.getDate(),
-            hours: now.getHours() - birthDate.getHours(),
-            minutes: now.getMinutes() - birthDate.getMinutes()
-        };
-    }
+    // Update the page with formatted age
+    document.getElementById('harperAge').textContent = formatAge(harperAge);
+    document.getElementById('sophieAge').textContent = formatAge(sophieAge);
+}
 
-    // Function to format the age for display
-    function formatAge(age) {
-        // Correct for negative values by borrowing from the next highest unit
-        if (age.minutes < 0) {
-            age.minutes += 60;
-            age.hours--;
-        }
-        if (age.hours < 0) {
-            age.hours += 24;
-            age.days--;
-        }
-        if (age.days < 0) {
-            // Borrow days from the previous month (assumes 30 days per month)
-            age.days += 30;
-            age.months--;
-        }
-        if (age.months < 0) {
-            age.months += 12;
-            age.years--;
-        }
-        // Return the formatted string
-        return age.years + ' years, ' +
-               age.months + ' months, ' +
-               age.days + ' days, ' +
-               age.hours + ' hours, and ' +
-               age.minutes + ' minutes';
-    }
+function formatAge(duration) {
+    // Extract years, months, days, hours, and minutes from the duration
+    var years = duration.years();
+    var months = duration.months();
+    var days = duration.days();
+    var hours = duration.hours();
+    var minutes = duration.minutes();
 
-    // Initialize the ticker once and set it to update every minute
-    updateAges();
-    setInterval(updateAges, 60000); // Update every 60,000 milliseconds (1 minute)
+    // Format the age string
+    return `${years} years, ${months} months, ${days} days, ${hours} hours, and ${minutes} minutes`;
+}
+
+// Initialize the ticker once and set it to update every minute
+updateAges();
+setInterval(updateAges, 60000); // Update every 60,000 milliseconds (1 minute)
 </script>
 <script>
         document.getElementById('downloadPdf').addEventListener('click', () => {

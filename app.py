@@ -9,6 +9,7 @@ import os
 from pytz import timezone
 import json
 import logging
+import random
 
 app = Flask(__name__)
 DATABASE = 'tally.db'
@@ -97,15 +98,21 @@ def get_last_record_timestamp():
     return format_datetime(result['timestamp']) if result and result['timestamp'] else "No records found"
 
 def get_image_files():
-    """List all image files in the 'hospital_images' directory."""
+    """List all image files from multiple directories."""
     image_files = []
-    hospital_images_dir = 'assets/hospital_images'  # Assuming 'assets' is inside the 'static' directory
+    directories = [
+        'assets/hospital_images',
+	'assets/uploaded_images',  # Existing directory
+        app.config['UPLOAD_FOLDER']  # New upload directory
+    ]
     
-    full_path = os.path.join(IMAGE_DIR, hospital_images_dir)
-    if os.path.exists(full_path):
-        for filename in os.listdir(full_path):
-            if filename.endswith(('.png', '.jpg', '.jpeg', '.gif', '.svg')):
-                image_files.append(os.path.join(hospital_images_dir, filename))
+    for directory in directories:
+        full_path = os.path.join(IMAGE_DIR, directory)
+        if os.path.exists(full_path):
+            for filename in os.listdir(full_path):
+                if filename.endswith(('.png', '.jpg', '.jpeg', '.gif', '.svg')):
+                    # Adjust path if necessary based on how your UPLOAD_FOLDER is structured
+                    image_files.append(os.path.join(directory, filename))
     
     return image_files
 
@@ -250,6 +257,7 @@ def add_note():
 def index():
     last_event_times = get_last_event_times()
     image_files = get_image_files()
+    random_image = random.choice(image_files) if image_files else None  # Select a random image
     last_updated = get_last_record_timestamp()
     diaper_count = get_diaper_count()
     # Fetch events for the last 3 days
@@ -289,7 +297,8 @@ def index():
 			   harper_activities_json=harper_activities_json, 
                            sophie_activities_json=sophie_activities_json,
 			   harper_growth_records=harper_growth_records,
-                           sophie_growth_records=sophie_growth_records)
+                           sophie_growth_records=sophie_growth_records,
+			   random_image=random_image)
 
 @app.route('/notes')
 def notes_page():
