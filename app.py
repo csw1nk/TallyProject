@@ -9,6 +9,7 @@ import os
 from pytz import timezone
 import json
 import logging
+import random
 
 app = Flask(__name__)
 DATABASE = 'tally.db'
@@ -16,6 +17,7 @@ TIMEZONE = 'America/New_York'
 IMAGE_DIR = os.path.join(app.root_path, 'static')
 UPLOAD_FOLDER = 'static/assets/uploaded_images'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.secret_key = 'Riverbend'  # Set to a random, secret value
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -96,15 +98,21 @@ def get_last_record_timestamp():
     return format_datetime(result['timestamp']) if result and result['timestamp'] else "No records found"
 
 def get_image_files():
-    """List all image files in the 'hospital_images' directory."""
+    """List all image files from multiple directories."""
     image_files = []
-    hospital_images_dir = 'assets/hospital_images'  # Assuming 'assets' is inside the 'static' directory
+    directories = [
+        'assets/hospital_images',
+	'assets/uploaded_images',  # Existing directory
+        app.config['UPLOAD_FOLDER']  # New upload directory
+    ]
     
-    full_path = os.path.join(IMAGE_DIR, hospital_images_dir)
-    if os.path.exists(full_path):
-        for filename in os.listdir(full_path):
-            if filename.endswith(('.png', '.jpg', '.jpeg', '.gif', '.svg')):
-                image_files.append(os.path.join(hospital_images_dir, filename))
+    for directory in directories:
+        full_path = os.path.join(IMAGE_DIR, directory)
+        if os.path.exists(full_path):
+            for filename in os.listdir(full_path):
+                if filename.endswith(('.png', '.jpg', '.jpeg', '.gif', '.svg')):
+                    # Adjust path if necessary based on how your UPLOAD_FOLDER is structured
+                    image_files.append(os.path.join(directory, filename))
     
     return image_files
 
@@ -249,6 +257,7 @@ def add_note():
 def index():
     last_event_times = get_last_event_times()
     image_files = get_image_files()
+    random_image = random.choice(image_files) if image_files else None  # Select a random image
     last_updated = get_last_record_timestamp()
     diaper_count = get_diaper_count()
     # Fetch events for the last 3 days
@@ -288,7 +297,8 @@ def index():
 			   harper_activities_json=harper_activities_json, 
                            sophie_activities_json=sophie_activities_json,
 			   harper_growth_records=harper_growth_records,
-                           sophie_growth_records=sophie_growth_records)
+                           sophie_growth_records=sophie_growth_records,
+			   random_image=random_image)
 
 @app.route('/notes')
 def notes_page():
@@ -360,6 +370,22 @@ def add_image():
 
     # Respond with a JSON message
     return jsonify({'message': message})
+
+@app.route('/add_event', methods=['POST'])
+def add_event():
+    event_type = request.form.get('event_type')
+    if event_type:
+        try:
+            with get_db_connection() as conn:
+                cur = conn.cursor()
+                cur.execute("INSERT INTO keypresses (key_label) VALUES (?)", (event_type,))
+                conn.commit()
+            flash('Event added successfully!', 'success')
+        except sqlite3.Error as e:
+            flash(f'An error occurred: {e}', 'error')
+    else:
+        flash('Invalid event type.', 'error')
+    return redirect(url_for('index'))  # Or the appropriate view function
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

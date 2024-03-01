@@ -7,6 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"> <!-- Use Google Fonts for consistency -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.33/moment-timezone-with-data-1970-2030.min.js"></script>
+
     <style>
         body {
             font-family: 'Roboto', sans-serif; /* More readable font */
@@ -58,13 +61,16 @@
         box-sizing: border-box; /* Include padding and border in the width */
     }
 }
-        .content-image {
-            max-width: 100%; /* Full width on smaller screens */
-            height: auto;
-            display: block;
-            margin: 20px auto;
-            cursor: pointer; /* Indicates the image can be clicked */
-        }
+.content-image {
+    max-width: 750px; /* Maximum width for images */
+    max-height: 750px; /* Maximum height for images to handle tall images */
+    width: auto; /* Adjust width automatically to maintain aspect ratio */
+    height: auto; /* Adjust height automatically to maintain aspect ratio */
+    display: block;
+    margin: 20px auto; /* Centers the image */
+    object-fit: contain; /* Ensures the image is scaled to maintain its aspect ratio while fitting within the element's box */
+    cursor: pointer; /* Indicates the image can be clicked */
+}
 @media (min-width: 768px) { /* For desktop screens */
             .content-image {
                 max-width: 50%; /* Adjust to a reasonable size on desktop */
@@ -230,6 +236,69 @@
     font-size: 100px;
 }
 
+.custom-container {
+  border: 8px solid transparent;
+  border-image: repeating-linear-gradient(45deg, #FFA07A, #FFA07A 10px, #ADD8E6 10px, #ADD8E6 20px) 1;
+  padding: 20px;
+  margin-bottom: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 600px; /* Adjust this value to suit your design */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Adds a subtle shadow for depth */
+}
+
+  .form-container {
+    background-color: #ADD8E6; /* Light blue */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    margin: auto;
+    border: 4px solid #FFA07A; /* Orange sherbet */
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  label {
+    font-weight: bold;
+    color: #555;
+  }
+  select, input[type="submit"] {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+  }
+  input[type="submit"] {
+    background-color: #FFA07A; /* Orange sherbet */
+    color: white;
+    cursor: pointer;
+    border: none;
+  }
+  input[type="submit"]:hover {
+    background-color: #e6957d; /* Darker shade of orange sherbet */
+  }
+
+.flash-success {
+  padding: 10px;
+  background-color: #add8e6; /* Light blue */
+  color: #FFFFFF;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.flash-error {
+  padding: 10px;
+  background-color: #ffa07a; /* Orange sherbet */
+  color: #FFFFFF;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  text-align: center;
+}
+
 </style>
 </head>
 <body>
@@ -268,16 +337,22 @@
     <h2>Harper's Age: <span id="harperAge"></span></h2>
     <h2>Sophie's Age: <span id="sophieAge"></span></h2>
 </div>
-    <img src="{{ url_for('static', filename='assets/hospital_images/girlsbasket.jpg') }}" alt="Photo of the girls in basket day 2 of life" class="content-image" onclick="toggleGallery(true)">
 
-    <!-- Gallery Overlay -->
-    <div id="galleryOverlay">
-        <span class="closeBtn" onclick="toggleGallery(false)">&times;</span>
-        <!-- Dynamically loaded images from Flask -->
-        {% for image in image_files %}
+<div>
+    {% if random_image %}
+        <img src="{{ url_for('static', filename=random_image) }}" alt="Featured Image" class="content-image">
+    {% else %}
+        <p>No featured image available.</p>
+    {% endif %}
+</div>
+<!-- Gallery Overlay -->
+<div id="galleryOverlay">
+    <span class="closeBtn" onclick="toggleGallery(false)">&times;</span>
+    <!-- Dynamically loaded images from Flask -->
+    {% for image in image_files %}
         <img src="{{ url_for('static', filename=image) }}" class="galleryImg" alt="Gallery Image">
-        {% endfor %}
-    </div>
+    {% endfor %}
+</div>
 
     <h2>Last Event Times</h2>
     <div style="display: flex; justify-content: space-around;">
@@ -312,25 +387,51 @@
             </table>
         </div>
     </div>
- <h2>Add Note or Reminder</h2>
-    <form id="noteForm">
-        <label for="noteText">Note:</label><br>
-        <textarea id="noteText" name="noteText" rows="4" cols="50"></textarea><br>
-        <input type="button" value="Submit" class="button-style" onclick="submitNote()">
-      </form>
-    <a href="/notes" class="button-style">View Notes</a>
 
-<h2>Add Image</h2>
-<form id="imageForm" method="post" action="/add_image" enctype="multipart/form-data">
-    <label for="imageUpload" class="file-upload-label">Choose Image</label> <!-- Adjusted class name -->
-    <div class="file-upload-container"> <!-- Adjusted class name -->
-        <input type="file" id="imageUpload" name="imageUpload" class="file-input">
-	<div id="imagePreview" style="margin-top: 20px;"></div>
+<div class="form-container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="flash-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form action="/add_event" method="post">
+    <label for="event_type">Event Type:</label>
+    <select name="event_type" id="event_type">
+      <option value="Feeding Sophie">Feeding Sophie</option>
+      <option value="Pee Harper">Pee Harper</option>
+      <option value="Poo Sophie">Poo Sophie</option>
+      <option value="Poo Harper">Poo Harper</option>
+      <option value="Pee Sophie">Pee Sophie</option>
+      <option value="Feeding Harper">Feeding Harper</option>
+    </select>
+    <input type="submit" value="Add Event">
+  </form>
+</div>
+
+<div class="custom-container">
+  <h2>Add Note or Reminder</h2>
+  <form id="noteForm">
+    <label for="noteText">Note:</label><br>
+    <textarea id="noteText" name="noteText" rows="4" cols="50"></textarea><br>
+    <input type="button" value="Submit" class="button-style" onclick="submitNote()">
+  </form>
+  <a href="/notes" class="button-style">View Notes</a>
+
+  <h2>Add Image</h2>
+  <form id="imageForm" method="post" action="/add_image" enctype="multipart/form-data">
+    <label for="imageUpload" class="file-upload-label">Choose Image</label>
+    <div class="file-upload-container">
+      <input type="file" id="imageUpload" name="imageUpload" class="file-input">
+      <div id="imagePreview" style="margin-top: 20px;"></div>
     </div>
     <br>
     <input type="submit" value="Upload Image">
-</form>
-<div id="imageMessage"></div>
+  </form>
+  <div id="imageMessage"></div>
+</div>
 
   <div style="display: flex; justify-content: space-around;">
   <div>
@@ -568,66 +669,38 @@ function animateValue(id, start, end, duration, callback) {
 }
 </script>
 <script>
-    // Function to calculate and display the age
-    function updateAges() {
-        // Birthdates and times (in your local timezone)
-        var harperBirthday = new Date('January 30, 2024 22:47:00 EST');
-        var sophieBirthday = new Date('January 30, 2024 23:04:00 EST');
+function updateAges() {
+    // Define the birthdates in EST
+    var harperBirthday = moment.tz("2024-01-30 22:47:00", "America/New_York");
+    var sophieBirthday = moment.tz("2024-01-30 23:04:00", "America/New_York");
 
-        // Calculate ages
-        var harperAge = calculateAge(harperBirthday);
-        var sophieAge = calculateAge(sophieBirthday);
+    // Get the current time in EST
+    var now = moment.tz("America/New_York");
 
-        // Update the page
-        document.getElementById('harperAge').textContent = formatAge(harperAge);
-        document.getElementById('sophieAge').textContent = formatAge(sophieAge);
-    }
+    // Calculate age
+    var harperAge = moment.duration(now.diff(harperBirthday));
+    var sophieAge = moment.duration(now.diff(sophieBirthday));
 
-    // Function to calculate the age difference given a birthdate
-    function calculateAge(birthDate) {
-        var now = new Date();
-        var ageDiff = now - birthDate; // age in milliseconds
-        var ageDate = new Date(ageDiff); // 'age' as a date object since epoch
-        return {
-            years: now.getFullYear() - birthDate.getFullYear(),
-            months: now.getMonth() - birthDate.getMonth(),
-            days: now.getDate() - birthDate.getDate(),
-            hours: now.getHours() - birthDate.getHours(),
-            minutes: now.getMinutes() - birthDate.getMinutes()
-        };
-    }
+    // Update the page with formatted age
+    document.getElementById('harperAge').textContent = formatAge(harperAge);
+    document.getElementById('sophieAge').textContent = formatAge(sophieAge);
+}
 
-    // Function to format the age for display
-    function formatAge(age) {
-        // Correct for negative values by borrowing from the next highest unit
-        if (age.minutes < 0) {
-            age.minutes += 60;
-            age.hours--;
-        }
-        if (age.hours < 0) {
-            age.hours += 24;
-            age.days--;
-        }
-        if (age.days < 0) {
-            // Borrow days from the previous month (assumes 30 days per month)
-            age.days += 30;
-            age.months--;
-        }
-        if (age.months < 0) {
-            age.months += 12;
-            age.years--;
-        }
-        // Return the formatted string
-        return age.years + ' years, ' +
-               age.months + ' months, ' +
-               age.days + ' days, ' +
-               age.hours + ' hours, and ' +
-               age.minutes + ' minutes';
-    }
+function formatAge(duration) {
+    // Extract years, months, days, hours, and minutes from the duration
+    var years = duration.years();
+    var months = duration.months();
+    var days = duration.days();
+    var hours = duration.hours();
+    var minutes = duration.minutes();
 
-    // Initialize the ticker once and set it to update every minute
-    updateAges();
-    setInterval(updateAges, 60000); // Update every 60,000 milliseconds (1 minute)
+    // Format the age string
+    return `${years} years, ${months} months, ${days} days, ${hours} hours, and ${minutes} minutes`;
+}
+
+// Initialize the ticker once and set it to update every minute
+updateAges();
+setInterval(updateAges, 60000); // Update every 60,000 milliseconds (1 minute)
 </script>
 <script>
         document.getElementById('downloadPdf').addEventListener('click', () => {
