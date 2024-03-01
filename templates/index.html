@@ -230,6 +230,69 @@
     font-size: 100px;
 }
 
+.custom-container {
+  border: 8px solid transparent;
+  border-image: repeating-linear-gradient(45deg, #FFA07A, #FFA07A 10px, #ADD8E6 10px, #ADD8E6 20px) 1;
+  padding: 20px;
+  margin-bottom: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 600px; /* Adjust this value to suit your design */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Adds a subtle shadow for depth */
+}
+
+  .form-container {
+    background-color: #ADD8E6; /* Light blue */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    margin: auto;
+    border: 4px solid #FFA07A; /* Orange sherbet */
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  label {
+    font-weight: bold;
+    color: #555;
+  }
+  select, input[type="submit"] {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+  }
+  input[type="submit"] {
+    background-color: #FFA07A; /* Orange sherbet */
+    color: white;
+    cursor: pointer;
+    border: none;
+  }
+  input[type="submit"]:hover {
+    background-color: #e6957d; /* Darker shade of orange sherbet */
+  }
+
+.flash-success {
+  padding: 10px;
+  background-color: #add8e6; /* Light blue */
+  color: #FFFFFF;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.flash-error {
+  padding: 10px;
+  background-color: #ffa07a; /* Orange sherbet */
+  color: #FFFFFF;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  text-align: center;
+}
+
 </style>
 </head>
 <body>
@@ -312,25 +375,51 @@
             </table>
         </div>
     </div>
- <h2>Add Note or Reminder</h2>
-    <form id="noteForm">
-        <label for="noteText">Note:</label><br>
-        <textarea id="noteText" name="noteText" rows="4" cols="50"></textarea><br>
-        <input type="button" value="Submit" class="button-style" onclick="submitNote()">
-      </form>
-    <a href="/notes" class="button-style">View Notes</a>
 
-<h2>Add Image</h2>
-<form id="imageForm" method="post" action="/add_image" enctype="multipart/form-data">
-    <label for="imageUpload" class="file-upload-label">Choose Image</label> <!-- Adjusted class name -->
-    <div class="file-upload-container"> <!-- Adjusted class name -->
-        <input type="file" id="imageUpload" name="imageUpload" class="file-input">
-	<div id="imagePreview" style="margin-top: 20px;"></div>
+<div class="form-container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="flash-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form action="/add_event" method="post">
+    <label for="event_type">Event Type:</label>
+    <select name="event_type" id="event_type">
+      <option value="Feeding Sophie">Feeding Sophie</option>
+      <option value="Pee Harper">Pee Harper</option>
+      <option value="Poo Sophie">Poo Sophie</option>
+      <option value="Poo Harper">Poo Harper</option>
+      <option value="Pee Sophie">Pee Sophie</option>
+      <option value="Feeding Harper">Feeding Harper</option>
+    </select>
+    <input type="submit" value="Add Event">
+  </form>
+</div>
+
+<div class="custom-container">
+  <h2>Add Note or Reminder</h2>
+  <form id="noteForm">
+    <label for="noteText">Note:</label><br>
+    <textarea id="noteText" name="noteText" rows="4" cols="50"></textarea><br>
+    <input type="button" value="Submit" class="button-style" onclick="submitNote()">
+  </form>
+  <a href="/notes" class="button-style">View Notes</a>
+
+  <h2>Add Image</h2>
+  <form id="imageForm" method="post" action="/add_image" enctype="multipart/form-data">
+    <label for="imageUpload" class="file-upload-label">Choose Image</label>
+    <div class="file-upload-container">
+      <input type="file" id="imageUpload" name="imageUpload" class="file-input">
+      <div id="imagePreview" style="margin-top: 20px;"></div>
     </div>
     <br>
     <input type="submit" value="Upload Image">
-</form>
-<div id="imageMessage"></div>
+  </form>
+  <div id="imageMessage"></div>
+</div>
 
   <div style="display: flex; justify-content: space-around;">
   <div>

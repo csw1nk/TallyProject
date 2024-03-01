@@ -16,6 +16,7 @@ TIMEZONE = 'America/New_York'
 IMAGE_DIR = os.path.join(app.root_path, 'static')
 UPLOAD_FOLDER = 'static/assets/uploaded_images'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.secret_key = 'Riverbend'  # Set to a random, secret value
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -360,6 +361,22 @@ def add_image():
 
     # Respond with a JSON message
     return jsonify({'message': message})
+
+@app.route('/add_event', methods=['POST'])
+def add_event():
+    event_type = request.form.get('event_type')
+    if event_type:
+        try:
+            with get_db_connection() as conn:
+                cur = conn.cursor()
+                cur.execute("INSERT INTO keypresses (key_label) VALUES (?)", (event_type,))
+                conn.commit()
+            flash('Event added successfully!', 'success')
+        except sqlite3.Error as e:
+            flash(f'An error occurred: {e}', 'error')
+    else:
+        flash('Invalid event type.', 'error')
+    return redirect(url_for('index'))  # Or the appropriate view function
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
